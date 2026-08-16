@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/internal/maintenance", "schedule": "*/5 * * * *" }
+  ],
+  "functions": {
+    "app/api/v1/sessions/[id]/uploads/route.ts": { "maxDuration": 60 },
+    "app/api/v1/sessions/[id]/[action]/route.ts": { "maxDuration": 60 },
+    "app/api/internal/maintenance/route.ts": { "maxDuration": 60 }
+  }
+}

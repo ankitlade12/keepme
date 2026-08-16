@@ -1,0 +1,89 @@
+{
+  "provider": "YouCam Skin Analysis v2.1",
+  "concerns": [
+    "texture",
+    "radiance",
+    "redness"
+  ],
+  "source": {
+    "output": [
+      {
+        "ui_score": 82,
+        "mask_urls": "<redacted>",
+        "raw_score": 84.16786193847656,
+        "type": "redness",
+        "url": "<redacted>"
+      },
+      {
+        "ui_score": 98,
+        "mask_urls": "<redacted>",
+        "raw_score": 99.04935956001282,
+        "type": "texture",
+        "url": "<redacted>"
+      },
+      {
+        "ui_score": 84,
+        "mask_urls": "<redacted>",
+        "raw_score": 88.37656378746033,
+        "type": "radiance",
+        "url": "<redacted>"
+      },
+      {
+        "score": 88,
+        "type": "all",
+        "url": "<redacted>"
+      },
+      {
+        "score": 38,
+        "type": "skin_age",
+        "url": "<redacted>"
+      },
+      {
+        "mask_urls": "<redacted>",
+        "type": "resize_image",
+        "url": "<redacted>"
+      }
+    ]
+  },
+  "generated": {
+    "output": [
+      {
+        "ui_score": 82,
+        "mask_urls": "<redacted>",
+        "raw_score": 83.85572052001953,
+        "type": "redness",
+        "url": "<redacted>"
+      },
+      {
+        "ui_score": 85,
+        "mask_urls": "<redacted>",
+        "raw_score": 89.65417742729187,
+        "type": "radiance",
+        "url": "<redacted>"
+      },
+      {
+        "ui_score": 98,
+        "mask_urls": "<redacted>",
+        "raw_score": 99.05807375907898,
+        "type": "texture",
+        "url": "<redacted>"
+      },
+      {
+        "score": 88.33333333333333,
+        "type": "all",
+        "url": "<redacted>"
+      },
+      {
+        "score": 40,
+        "type": "skin_age",
+        "url": "<redacted>"
+      },
+      {
+        "mask_urls": "<redacted>",
+        "type": "resize_image",
+        "url": "<redacted>"
+      }
+    ]
+  },
+  "createdAt": "2026-08-16T16:00:39.415Z"
+}

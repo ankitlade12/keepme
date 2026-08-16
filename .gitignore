@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# local secrets and environment overrides
+.env
+.env.local
+.env.*.local
+
+# test and coverage output
+coverage/
+
+# editor and OS files
+.DS_Store
+*.log
+h.md
+
+# TypeScript cache
+*.tsbuildinfo
+
+# intermediate generated fixture iterations
+public/demo/controlled-glasses-violation.png
+public/demo/controlled-glasses-violation-v2.png
+public/demo/controlled-glasses-violation-v3.png
+public/demo/controlled-glasses-violation-v4.png

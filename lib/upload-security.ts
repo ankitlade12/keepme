@@ -1,0 +1,43 @@
+import "server-only";
+
+import sharp, { type Metadata } from "sharp";
+import { serverConfig } from "./server-config";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_PIXELS = 24_000_000;
+
+export class UploadValidationError extends Error {}
+
+export async function sanitizeImage(value: FormDataEntryValue | null, label: string) {
+  if (!(value instanceof File)) throw new UploadValidationError(`${label} is required.`);
+  if (!value.size || value.size > MAX_FILE_SIZE) throw new UploadValidationError(`${label} must be between 1 byte and 10 MB.`);
+  const input = new Uint8Array(await value.arrayBuffer());
+  let metadata: Metadata;
+  try {
+    metadata = await sharp(input, { limitInputPixels: MAX_PIXELS, failOn: "warning" }).metadata();
+  } catch {
+    throw new UploadValidationError(`${label} is not a safe, decodable image.`);
+  }
+  if (!metadata.width || !metadata.height || !["jpeg", "png"].includes(metadata.format ?? "")) throw new UploadValidationError(`${label} must contain valid JPEG or PNG bytes.`);
+  if (metadata.width < 320 || metadata.height < 320) throw new UploadValidationError(`${label} must be at least 320 × 320 pixels.`);
+  if (metadata.width * metadata.height > MAX_PIXELS) throw new UploadValidationError(`${label} exceeds the 24-megapixel safety limit.`);
+  await malwareScan(input, label);
+  const bytes = await sharp(input, { limitInputPixels: MAX_PIXELS })
+    .rotate()
+    .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 92, mozjpeg: true })
+    .toBuffer();
+  return { name: "keepme-sanitized.jpg", size: bytes.byteLength, type: "image/jpeg", bytes: new Uint8Array(bytes), width: metadata.width, height: metadata.height };
+}
+
+async function malwareScan(bytes: Uint8Array, label: string) {
+  if (!serverConfig.MALWARE_SCAN_URL) return;
+  const response = await fetch(serverConfig.MALWARE_SCAN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/octet-stream", ...(serverConfig.MALWARE_SCAN_TOKEN ? { Authorization: `Bearer ${serverConfig.MALWARE_SCAN_TOKEN}` } : {}) },
+    body: Buffer.from(bytes),
+    signal: AbortSignal.timeout(10_000),
+  });
+  const result = await response.json().catch(() => ({})) as { clean?: boolean };
+  if (!response.ok || result.clean !== true) throw new UploadValidationError(`${label} did not pass the malware scan.`);
+}

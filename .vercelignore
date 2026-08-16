@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.*.local
+.next
+node_modules
+coverage
+h.md
+public/demo/controlled-glasses-violation.png
+public/demo/controlled-glasses-violation-v2.png
+public/demo/controlled-glasses-violation-v3.png
+public/demo/controlled-glasses-violation-v4.png
