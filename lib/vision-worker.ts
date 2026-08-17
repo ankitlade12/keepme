@@ -12,8 +12,9 @@ export interface VisionSignals {
 }
 
 export async function analyzeWithVisionWorker(source: Uint8Array, result: Uint8Array, customZones: PreserveZone[]): Promise<VisionSignals | null> {
-  if (!serverConfig.INTEGRITY_WORKER_URL) return null;
-  const response = await fetch(new URL("/v1/analyze", serverConfig.INTEGRITY_WORKER_URL), {
+  const baseUrl = serverConfig.INTEGRITY_WORKER_URL ?? serverConfig.INTEGRITY_URL;
+  if (!baseUrl) return null;
+  const response = await fetch(new URL("v1/analyze", `${baseUrl.replace(/\/$/, "")}/`), {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(serverConfig.INTEGRITY_WORKER_TOKEN ? { Authorization: `Bearer ${serverConfig.INTEGRITY_WORKER_TOKEN}` } : {}) },
     body: JSON.stringify({ source: Buffer.from(source).toString("base64"), result: Buffer.from(result).toString("base64"), customZones }),

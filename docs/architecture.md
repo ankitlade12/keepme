@@ -5,7 +5,7 @@
 ```text
 Next.js web experience
   ├─ Landing and retailer surfaces
-  ├─ Auth.js retailer access and opaque shopper capabilities
+  ├─ Clerk retailer access and opaque shopper capabilities
   ├─ Guided and live product orchestration
   └─ /api/v1 session boundary
        ├─ Versioned Identity Contract validation (Zod)
@@ -13,7 +13,7 @@ Next.js web experience
        ├─ YouCam server adapter
        ├─ Signed receipt generation and verification
        ├─ Postgres metadata, jobs, events, usage, and rate limits
-       ├─ Private KMS-backed artifact storage
+       ├─ Private Vercel Blob artifact storage
        └─ Verified deletion and expiry cleanup
 ```
 
@@ -66,19 +66,19 @@ Implemented now:
 - Session API with live/demo orchestration boundary
 - YouCam AI Clothes v3 and Skin Analysis v2.1 adapters
 - Retailer aggregate view and cohort-suppression communication
-- Opaque shopper capabilities, OAuth retailer allowlist, and tenant-scoped records
+- Opaque shopper capabilities, Clerk retailer authentication, stable organization/user tenant IDs, and an exact retailer allowlist
 - Upload decoding, pixel/size bounds, metadata stripping, safe re-encoding, and scanner adapter
 - Postgres session/job/audit/provider-usage adapters with an in-process demo fallback
-- S3-compatible private object adapter with SSE-KMS and deletion verification
+- Private Vercel Blob adapter with server-only access and deletion verification
 - Rate limits and per-session/tenant provider credit budgets
 - OpenTelemetry and privacy-filtered operational events
 - Signed downloadable receipts and public verification endpoint
-- Deployable MediaPipe face-landmark and person-segmentation worker
-- Cleanup cron, retry queue, health route, Docker/Vercel configuration, CI, legal and security surfaces
+- Privately bound container service for MediaPipe face-landmark and person-segmentation analysis
+- Five-minute GitHub Actions cleanup, daily Vercel fallback cron, lease-recovering retry queue, health route, Docker/Vercel configuration, CI, legal and security surfaces
 
 Requires external provisioning or real-world evidence:
 
-- Managed Postgres, private S3/KMS, OAuth application, malware scanner, vision-worker host, monitoring exporter, domain, and production secrets
+- Malware scanner, monitoring exporter, domain, and production secrets not supplied by managed integrations
 - Credential rotation and verified YouCam production quota
 - A consented, governed, independently labeled calibration dataset; tooling is included, but results cannot be fabricated
 - Human screen-reader/keyboard audit, penetration test, processor/vendor review, incident drill, and jurisdiction-specific legal review

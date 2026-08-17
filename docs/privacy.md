@@ -24,4 +24,4 @@ KeepMe treats source photos, generated images, masks, heatmaps, and repair artif
 
 ## Environment boundary
 
-Local guided mode uses in-process metadata/artifact adapters and static synthetic images. Public production is configured to fail closed unless durable tenant-scoped Postgres, KMS-backed private object storage, OAuth, receipt signing, malware scanning, cleanup authorization, and the landmark/segmentation worker are connected. Production includes scheduled cleanup, privacy-filtered logs, rate and provider-credit limits, same-origin mutation checks, byte-level image decoding, and deletion verification.
+Local guided mode uses in-process metadata/artifact adapters and static synthetic images. Public production is configured to fail closed unless durable tenant-scoped Postgres, private Vercel Blob storage, Clerk authentication, receipt signing, malware scanning, cleanup authorization, and the landmark/segmentation worker are connected. Production includes scheduled cleanup, privacy-filtered logs, rate and provider-credit limits, same-origin mutation checks, byte-level image decoding, and deletion verification.

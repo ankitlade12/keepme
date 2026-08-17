@@ -26,6 +26,13 @@ export function validSessionToken(storedDigest: string, supplied: string | undef
   return candidate.length === expected.length && timingSafeEqual(candidate, expected);
 }
 
+export function validSecret(stored: string | undefined, supplied: string | undefined) {
+  if (!stored || !supplied) return false;
+  const candidate = Buffer.from(digestToken(supplied));
+  const expected = Buffer.from(digestToken(stored));
+  return timingSafeEqual(candidate, expected);
+}
+
 export function suppliedSessionToken(request: NextRequest) {
   return request.cookies.get("__Host-keepme_session")?.value ?? request.cookies.get("keepme_session")?.value ?? request.headers.get("x-keepme-session") ?? undefined;
 }

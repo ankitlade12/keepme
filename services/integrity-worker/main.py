@@ -1,4 +1,5 @@
 import base64
+import hmac
 import os
 from typing import List
 
@@ -23,12 +24,13 @@ class Zone(BaseModel):
 class AnalyzeRequest(BaseModel):
     source: str
     result: str
-    customZones: List[Zone] = []
+    customZones: List[Zone] = Field(default_factory=list)
 
 
 def authorize(authorization: str | None = Header(default=None)):
     expected = os.environ.get("INTEGRITY_WORKER_TOKEN")
-    if not expected or authorization != f"Bearer {expected}":
+    supplied = authorization.removeprefix("Bearer ") if authorization else ""
+    if not expected or not hmac.compare_digest(supplied, expected):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 

@@ -1,4 +1,4 @@
-# MVP requirements traceability
+# Product beta requirements traceability
 
 | PRD area | Current implementation | Production follow-up |
 |---|---|---|

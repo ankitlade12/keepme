@@ -4,10 +4,10 @@
 
 - Next.js web/API: Vercel or the included standalone Docker image.
 - Metadata/jobs/audit: managed Postgres through `DATABASE_URL`.
-- Sensitive artifacts: private S3-compatible bucket with SSE-KMS.
-- Vision: `services/integrity-worker` on a private container service.
+- Sensitive artifacts: private Vercel Blob store with server-only access.
+- Vision: the authenticated `services/integrity-worker` Vercel Service.
 - Upload malware scanning: authenticated service returning `{ "clean": true }`.
-- Authentication: GitHub OAuth through Auth.js, restricted by `RETAILER_EMAIL_ALLOWLIST`.
+- Authentication: Clerk, restricted by `RETAILER_EMAIL_ALLOWLIST` and isolated by the active Clerk organization or user ID.
 - Telemetry: OpenTelemetry through the hosting platform; operational event rows remain privacy-filtered.
 
 ## Release gates
@@ -18,8 +18,10 @@
 4. Apply least-privilege runtime database and bucket credentials. Block all public bucket access.
 5. Deploy the vision worker and scanner; verify their health and authentication.
 6. Run unit, build, guided smoke, accessibility, authorization, upload-abuse, cleanup, and restore drills.
-7. Add the custom domain, TLS, OAuth callback, security contact, privacy contact, processor terms, alert routing, and on-call owner.
+7. Add the custom domain, TLS, Clerk production instance/domain, security contact, privacy contact, processor terms, alert routing, and on-call owner.
 8. Start with a capped internal tenant, inspect provider usage and deletion telemetry, then expand deliberately.
+
+The Vercel Hobby-safe daily cron is a fallback. GitHub Actions invokes the same authenticated maintenance endpoint every five minutes using the `KEEPME_CRON_SECRET` repository secret and `KEEPME_MAINTENANCE_URL` repository variable.
 
 ## Incidents
 
