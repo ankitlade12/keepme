@@ -257,7 +257,7 @@ npm run check:production  # fail-closed dependency and secret gate
 Current local result:
 
 ```text
-Tests  22 passed
+Tests  25 passed
 Lint   passed
 Build  passed
 Flow   guided contract → finding → repair → receipt → deletion passed
