@@ -40,8 +40,15 @@ export function suppliedSessionToken(request: NextRequest) {
 export function originAllowed(request: NextRequest) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  const expected = new URL(request.url).origin;
-  return origin === expected;
+  const expectedOrigins = new Set([new URL(request.url).origin]);
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim();
+  const host = forwardedHost || request.headers.get("host")?.trim();
+  if (host) {
+    const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",", 1)[0]?.trim();
+    const protocol = forwardedProtocol || new URL(request.url).protocol.replace(":", "");
+    expectedOrigins.add(`${protocol}://${host}`);
+  }
+  return expectedOrigins.has(origin);
 }
 
 export async function consumeRateLimit(bucket: string, limit: number, windowSeconds: number) {

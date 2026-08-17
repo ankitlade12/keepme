@@ -99,7 +99,7 @@ export function StudioApp() {
   const [garmentFile, setGarmentFile] = useState<File | null>(null);
   const [selectedGarmentId, setSelectedGarmentId] = useState("rust-utility");
   const [selectedGarmentName, setSelectedGarmentName] = useState("Rust utility jacket");
-  const [generatedUrl, setGeneratedUrl] = useState("/demo/youcam-live-tryon.png");
+  const [generatedUrl, setGeneratedUrl] = useState("/demo/youcam-live-tryon.jpg");
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState(progressCopy[0]);
   const [result, setResult] = useState<IntegrityResult>(() => demoResult("ic_demo", "pass"));

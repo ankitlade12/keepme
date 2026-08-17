@@ -250,7 +250,7 @@ npm run lint              # ESLint and Next.js rules
 npm test                  # integrity, receipt, upload, security, and UI tests
 npm run build             # optimized production compilation
 npm run smoke:guided      # synthetic contract-to-deletion API flow
-npm run audit:a11y        # automated WCAG A/AA route audit
+npm run audit:a11y        # browser rendering, error, overflow, and WCAG A/AA audit
 npm run check:production  # fail-closed dependency and secret gate
 ```
 
@@ -263,7 +263,7 @@ Build  passed
 Flow   guided contract → finding → repair → receipt → deletion passed
 ```
 
-GitHub Actions also runs a production dependency audit, lint, tests, build, guided smoke flow, and automated accessibility audit on pull requests and `main`.
+GitHub Actions also runs a production dependency audit, lint, tests, build, guided smoke flow, and browser rendering/accessibility audit on pull requests and `main`.
 
 ## Commands
 
@@ -277,7 +277,7 @@ GitHub Actions also runs a production dependency audit, lint, tests, build, guid
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run smoke:guided` | Verify the deterministic guided flow |
 | `npm run smoke:live` | Verify a configured live-provider flow |
-| `npm run audit:a11y` | Audit public product routes with Playwright and axe |
+| `npm run audit:a11y` | Check public routes and the live garment catalog for broken images, browser errors, overflow, and automated WCAG A/AA violations |
 | `npm run check:production` | Confirm required services/secrets and disable ephemeral fallbacks |
 | `npm run db:migrate` | Apply the initial Postgres migration |
 | `npm run calibrate -- <dataset.jsonl>` | Generate a threshold profile from governed evaluation data |

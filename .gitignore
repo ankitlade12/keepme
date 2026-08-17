@@ -15,7 +15,6 @@ coverage/
 # editor and OS files
 .DS_Store
 *.log
-h.md
 
 # TypeScript cache
 *.tsbuildinfo

@@ -24,7 +24,7 @@ if (!apiKey) throw new Error("YOUCAM_API_KEY is missing from .env.local");
 
 const sourcePath = path.join(root, "public/demo/source-shopper.png");
 const garmentPath = path.resolve(root, process.env.KEEPME_GARMENT_PATH ?? "public/demo/rust-jacket.png");
-const outputPath = path.resolve(root, process.env.KEEPME_OUTPUT_PATH ?? "public/demo/youcam-live-tryon.png");
+const outputPath = path.resolve(root, process.env.KEEPME_OUTPUT_PATH ?? "public/demo/youcam-live-tryon.jpg");
 
 const sourceBytes = await readFile(sourcePath);
 const garmentBytes = await readFile(garmentPath);

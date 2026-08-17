@@ -2,7 +2,7 @@ import sharp from "sharp";
 import path from "node:path";
 
 const root = process.cwd();
-const targetPath = path.join(root, "public/demo/youcam-live-tryon.png");
+const targetPath = path.join(root, "public/demo/youcam-live-tryon.jpg");
 const glassesRemovedPath = path.join(root, "public/demo/controlled-glasses-violation.png");
 const outputPath = path.join(root, "public/demo/controlled-glasses-violation-v5.png");
 

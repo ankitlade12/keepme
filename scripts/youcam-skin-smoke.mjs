@@ -99,7 +99,7 @@ function redactUrls(value) {
 }
 
 const sourceInput = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, "public/demo/source-shopper.png");
-const generatedInput = process.argv[3] ? path.resolve(process.argv[3]) : path.join(root, "public/demo/youcam-live-tryon.png");
+const generatedInput = process.argv[3] ? path.resolve(process.argv[3]) : path.join(root, "public/demo/youcam-live-tryon.jpg");
 const source = await analyze(sourceInput, "source");
 const generated = await analyze(generatedInput, "generated");
 const comparison = {

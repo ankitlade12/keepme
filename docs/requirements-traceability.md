@@ -30,7 +30,7 @@ This matrix connects product requirements to repository evidence and separates i
 | Operational telemetry | Conditional | [`observability.ts`](../lib/observability.ts), [`instrumentation.ts`](../instrumentation.ts), and Vercel components in [`layout.tsx`](../app/layout.tsx) provide structured events, OpenTelemetry, Web Analytics, and Speed Insights | Configure monitoring destinations, alerts, retention, and privacy review |
 | Fail-closed production readiness | Implemented | [`server-config.ts`](../lib/server-config.ts), [`production-readiness.mjs`](../scripts/production-readiness.mjs), and [`.env.example`](../.env.example) reject missing durable dependencies when ephemeral fallbacks are disabled | Run the gate inside every release environment and retain the result |
 | Accessibility | Implemented with external review pending | Semantic controls, skip link, visible focus, keyboard controls, reduced motion, and [`accessibility-audit.mjs`](../scripts/accessibility-audit.mjs) provide automated WCAG A/AA coverage | Complete independent keyboard, screen-reader, zoom, contrast, and cognitive walkthroughs |
-| CI and reproducible demo | Implemented | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`guided-flow-smoke.mjs`](../scripts/guided-flow-smoke.mjs), and package scripts run audit, lint, tests, build, guided smoke, and accessibility checks | Add monitored deployment smoke checks and release evidence retention |
+| CI and reproducible demo | Implemented | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`guided-flow-smoke.mjs`](../scripts/guided-flow-smoke.mjs), and package scripts run audit, lint, tests, build, guided smoke, browser-rendering, and accessibility checks | Add monitored deployment smoke checks and release evidence retention |
 | Calibration and decision quality | Tooling implemented; external evidence required | [`calibrate-integrity.mjs`](../scripts/calibrate-integrity.mjs) and the [calibration protocol](../calibration/README.md) define input, false-negative constraint, and immutable output behavior | Obtain consented, independently labeled data; review subgroup coverage without sensitive-trait inference |
 | Legal and operational readiness | External evidence required | Public privacy, terms, security pages and the [production runbook](production-runbook.md) document the intended boundary | Complete vendor, jurisdiction, incident, backup, deletion, accessibility, and security reviews |
 
@@ -42,7 +42,7 @@ This matrix connects product requirements to repository evidence and separates i
 | Unit/component behavior | `npm test` |
 | Production compilation | `npm run build` |
 | Guided lifecycle | `npm run smoke:guided` |
-| Automated accessibility | `npm run audit:a11y` |
+| Automated browser rendering and accessibility | `npm run audit:a11y` |
 | Required production dependencies | `npm run check:production` |
 | Threshold generation | `npm run calibrate -- <consented-evaluation.jsonl>` |
 

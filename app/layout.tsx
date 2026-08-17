@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const vercelTelemetry = Boolean(process.env.VERCEL);
   return (
     <html lang="en">
       <body>
         <a className="skip-link" href="#main-content">Skip to main content</a>
         {children}
-        <Analytics />
-        <SpeedInsights />
+        {vercelTelemetry && <><Analytics /><SpeedInsights /></>}
       </body>
     </html>
   );

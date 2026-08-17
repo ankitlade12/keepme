@@ -32,6 +32,11 @@ const csp = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   output: process.env.VERCEL ? undefined : "standalone",
+  images: {
+    // Vercel Services routes do not expose Next's /_next/image endpoint.
+    // Serve the local demo assets directly so protected previews render them.
+    unoptimized: true,
+  },
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },

@@ -138,9 +138,7 @@ KEEPME_URL=https://your-domain.example npm run audit:a11y
 
 ## Cleanup Scheduling
 
-Vercel Cron calls `/api/internal/maintenance` daily as a fallback according to [`vercel.json`](../vercel.json). A production pilot should use a more frequent monitored scheduler appropriate to the session TTL.
-
-If GitHub Actions or another external scheduler is used, configure it to call the same endpoint with `CRON_SECRET` and keep the deployment URL in a protected variable. This repository does not currently include a five-minute maintenance workflow; operators must add and monitor one before relying on that cadence.
+Vercel Cron calls `/api/internal/maintenance` daily as a fallback according to [`vercel.json`](../vercel.json). The monitored [GitHub Actions maintenance workflow](../.github/workflows/maintenance.yml) also calls the endpoint every five minutes when `KEEPME_MAINTENANCE_URL` and `KEEPME_CRON_SECRET` are configured. Keep the deployment URL in a protected repository variable and the credential in an Actions secret.
 
 Verify on every release:
 
