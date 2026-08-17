@@ -2,6 +2,7 @@ import "server-only";
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import type { NextRequest } from "next/server";
+import { clerkConfigured } from "./clerk-config";
 import { getSession } from "./session-store";
 import { retailerAllowlist, serverConfig } from "./server-config";
 import { suppliedSessionToken, validSessionToken } from "./security";
@@ -16,12 +17,14 @@ export async function authorizedSession(request: NextRequest, id: string) {
   const session = await getSession(id);
   if (!session) return null;
   if (validSessionToken(session.accessTokenDigest, suppliedSessionToken(request))) return session;
+  if (!clerkConfigured()) return null;
   const { userId } = await auth();
   if (userId && session.actorId === userId) return session;
   return null;
 }
 
 export async function currentTenant() {
+  if (!clerkConfigured()) return { tenantId: "public", actorId: null };
   const { userId, orgId } = await auth();
   return { tenantId: tenantFor(userId, orgId), actorId: userId };
 }
@@ -30,6 +33,7 @@ export async function retailerAuthorized() {
   if (serverConfig.NODE_ENV !== "production" && retailerAllowlist().size === 0) {
     return { authorized: true, demo: true, email: null, tenantId: "public" };
   }
+  if (!clerkConfigured()) return { authorized: false, demo: false, email: null, tenantId: null };
   const { userId, orgId } = await auth();
   if (!userId) return { authorized: false, demo: false, email: null, tenantId: null };
   const user = await currentUser();

@@ -7,9 +7,9 @@ async function json(response) {
 }
 
 const created = await fetch(`${base}/api/v1/sessions`, { method: "POST" });
+const session = await json(created);
 const sessionCookie = created.headers.get("set-cookie")?.split(";", 1)[0];
 if (!sessionCookie) throw new Error("Session capability cookie was not issued.");
-const session = await json(created);
 const id = session.sessionId;
 const api = (path, init = {}) => fetch(`${base}${path}`, { ...init, headers: { ...(init.headers ?? {}), Cookie: sessionCookie } });
 const unauthorized = await fetch(`${base}/api/v1/sessions/${id}`);
