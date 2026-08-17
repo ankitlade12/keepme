@@ -36,13 +36,18 @@ const progressCopy = [
 const protectionIcons = [CircleUserRound, Sparkles, Scissors, ImageIcon, Glasses];
 let pendingSessionRequest: Promise<{ sessionId: string }> | null = null;
 
+async function responseJson<T>(response: Response): Promise<T> {
+  const payload = await response.json().catch(() => null) as (T & { error?: string }) | null;
+  if (!response.ok) throw new Error(payload?.error ?? `The request could not be completed (${response.status}).`);
+  if (payload === null) throw new Error("The server returned an invalid response. Please try again.");
+  return payload;
+}
+
 function createPrivateSession() {
   if (!pendingSessionRequest) {
     pendingSessionRequest = fetch("/api/v1/sessions", { method: "POST" })
       .then(async (response): Promise<{ sessionId: string }> => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error ?? "A private session could not be created.");
-        return payload;
+        return responseJson<{ sessionId: string }>(response);
       });
     pendingSessionRequest.then(
       () => { pendingSessionRequest = null; },
@@ -86,7 +91,7 @@ const resultCopy: Record<ResultState, { title: string; detail: string; tone: "pa
   },
 };
 
-export function StudioApp() {
+export function StudioApp({ liveModeAvailable }: { liveModeAvailable: boolean }) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [experienceMode, setExperienceMode] = useState<"guided" | "live">("guided");
   const [step, setStep] = useState(0);
@@ -164,18 +169,13 @@ export function StudioApp() {
   }
 
   function chooseExperienceMode(mode: "guided" | "live") {
+    if (mode === "live" && !liveModeAvailable) return;
     setExperienceMode(mode);
     if (mode === "guided") {
       setPersonUrl("/demo/source-shopper.png");
       setPersonFile(null);
       selectCatalogGarment(garmentCatalog[0]);
     }
-  }
-
-  async function responseJson<T>(response: Response): Promise<T> {
-    const payload = await response.json().catch(() => ({})) as T & { error?: string };
-    if (!response.ok) throw new Error(payload.error ?? "The request could not be completed.");
-    return payload;
   }
 
   async function defaultFile(url: string, name: string) {
@@ -322,7 +322,7 @@ export function StudioApp() {
   }
 
   function tryAnotherGarment() {
-    setExperienceMode("live");
+    setExperienceMode(liveModeAvailable ? "live" : "guided");
     setConsented(false);
     setReceipt(null);
     setContract((current) => ({ ...current, contractId: `ic_${crypto.randomUUID().slice(0, 8)}`, consentedAt: null }));
@@ -366,8 +366,8 @@ export function StudioApp() {
               <button type="button" role="radio" aria-checked={experienceMode === "guided"} className={`experience-option ${experienceMode === "guided" ? "selected" : ""}`} onClick={() => chooseExperienceMode("guided")}>
                 <span className="experience-icon"><AlertTriangle size={19} /></span><span><strong>Identity drift demo</strong><small>Glasses removed → detect → restore → reverify</small></span><em>Recommended demo</em>
               </button>
-              <button type="button" role="radio" aria-checked={experienceMode === "live"} className={`experience-option ${experienceMode === "live" ? "selected" : ""}`} onClick={() => chooseExperienceMode("live")}>
-                <span className="experience-icon"><Sparkles size={19} /></span><span><strong>Live virtual try-on</strong><small>Choose any garment and generate with YouCam Clothes v3</small></span>
+              <button type="button" role="radio" aria-checked={experienceMode === "live"} disabled={!liveModeAvailable} className={`experience-option ${experienceMode === "live" ? "selected" : ""}`} onClick={() => chooseExperienceMode("live")}>
+                <span className="experience-icon"><Sparkles size={19} /></span><span><strong>Live virtual try-on</strong><small>{liveModeAvailable ? "Choose any garment and generate with YouCam Clothes v3" : "Temporarily unavailable while image safety services are configured"}</small></span>{!liveModeAvailable && <em>Demo only</em>}
               </button>
             </div>
             <section className="studio-card">

@@ -121,7 +121,7 @@ The repository includes controls and adapters, but the following evidence cannot
 - incident response, vulnerability intake, processor agreements, breach notification, and data-subject request procedures;
 - jurisdiction-specific privacy, consumer, accessibility, and retailer-contract review.
 
-The protected preview must not be treated as evidence that these production controls are complete.
+The hosted synthetic demo must not be treated as evidence that the controls required for public personal-image processing are complete.
 
 ## Release Security Checklist
 

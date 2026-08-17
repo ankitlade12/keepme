@@ -2,11 +2,13 @@ import "server-only";
 
 import sharp, { type Metadata } from "sharp";
 import { serverConfig } from "./server-config";
+import { productionSafetyRequired } from "./runtime-capabilities";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_PIXELS = 24_000_000;
 
 export class UploadValidationError extends Error {}
+export class UploadSecurityUnavailableError extends Error {}
 
 export async function sanitizeImage(value: FormDataEntryValue | null, label: string) {
   if (!(value instanceof File)) throw new UploadValidationError(`${label} is required.`);
@@ -31,13 +33,17 @@ export async function sanitizeImage(value: FormDataEntryValue | null, label: str
 }
 
 async function malwareScan(bytes: Uint8Array, label: string) {
-  if (!serverConfig.MALWARE_SCAN_URL) return;
+  if (!serverConfig.MALWARE_SCAN_URL) {
+    if (productionSafetyRequired()) throw new UploadSecurityUnavailableError("Live uploads are temporarily unavailable while image safety services are being configured.");
+    return;
+  }
   const response = await fetch(serverConfig.MALWARE_SCAN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/octet-stream", ...(serverConfig.MALWARE_SCAN_TOKEN ? { Authorization: `Bearer ${serverConfig.MALWARE_SCAN_TOKEN}` } : {}) },
     body: Buffer.from(bytes),
     signal: AbortSignal.timeout(10_000),
   });
+  if (!response.ok) throw new UploadSecurityUnavailableError("Live uploads are temporarily unavailable because the image safety service could not complete.");
   const result = await response.json().catch(() => ({})) as { clean?: boolean };
-  if (!response.ok || result.clean !== true) throw new UploadValidationError(`${label} did not pass the malware scan.`);
+  if (result.clean !== true) throw new UploadValidationError(`${label} did not pass the malware scan.`);
 }

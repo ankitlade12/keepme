@@ -4,7 +4,7 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000000.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![CI](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml)
-[![Vercel](https://img.shields.io/badge/Vercel-private%20preview-000000.svg?logo=vercel&logoColor=white)](https://vercel.com/ankitlade12-3052s-projects/keepme)
+[![Vercel](https://img.shields.io/badge/Vercel-live%20demo-000000.svg?logo=vercel&logoColor=white)](https://keepme-olive.vercel.app)
 
 > **A virtual try-on should change the garment—not the shopper.**
 
@@ -16,7 +16,7 @@ KeepMe is not identity verification, face recognition, medical analysis, or a gu
 
 **Demo data:** entirely synthetic<br>
 **Default demo:** deterministic and credential-free<br>
-**Hosted product:** protected Vercel preview; not approved for public personal-image uploads
+**Hosted product:** [keepme-olive.vercel.app](https://keepme-olive.vercel.app) — public synthetic demo; personal-image uploads remain disabled until the scanner and integrity services are configured
 
 ## Quick Highlights
 
@@ -28,7 +28,7 @@ KeepMe is not identity verification, face recognition, medical analysis, or a gu
 - **Signed Integrity Receipt** — downloadable JWS evidence binds the approved contract to result digests and the final decision
 - **Verified Deletion** — source, garment, generated, repaired, mask, and derived artifacts are deleted and checked for absence
 - **Retailer-Safe Operations** — tenant isolation, minimum-cohort analytics, provider credit budgets, rate limits, and privacy-filtered telemetry
-- **Fail-Closed Production Gate** — public operation is blocked until durable storage, authentication, scanning, signing, cleanup, and vision services are configured
+- **Fail-Closed Live Mode** — the synthetic demo remains usable, while personal-image processing stays disabled until durable storage, authentication, scanning, signing, cleanup, and vision services are configured
 
 ## Product Surfaces
 
@@ -42,7 +42,7 @@ KeepMe is not identity verification, face recognition, medical analysis, or a gu
 | Receipt verification | `/api/v1/receipts/verify` | Independent signed-receipt verification |
 | Public notices | `/privacy`, `/terms`, `/security` | Product privacy, terms, and security language |
 
-The preview is intentionally protected. The guided path is safe to run locally because it uses only the synthetic assets in [`public/demo`](public/demo/).
+The hosted guided path is public and uses only the synthetic assets in [`public/demo`](public/demo/). Live personal-image processing is intentionally unavailable until every production safety dependency passes the readiness check.
 
 ## Architecture Overview
 
@@ -316,7 +316,7 @@ Copy [`.env.example`](.env.example) to `.env.local`. The major groups are:
 | Integrity worker | `INTEGRITY_WORKER_URL` or Vercel-injected `INTEGRITY_URL`, plus `INTEGRITY_WORKER_TOKEN` |
 | Cost controls | `MAX_PROVIDER_TASKS_PER_SESSION`, `MAX_PROVIDER_TASKS_PER_HOUR` |
 
-Local development may use ephemeral adapters. Public production must set `KEEPME_ALLOW_EPHEMERAL=false`; the readiness check then requires every durable dependency.
+Local development may use ephemeral adapters. Public production must set `KEEPME_ALLOW_EPHEMERAL=false`; the readiness check then requires every durable dependency. Missing live-image services do not take down the synthetic demo, but live uploads fail closed with a JSON `503` response.
 
 ## API Surface
 
@@ -388,7 +388,7 @@ The novelty is the combination: **shopper-owned boundaries + measured evidence +
 
 ## Production Boundary
 
-KeepMe is a working end-to-end beta foundation with a synthetic judge path and optional live YouCam integration. The current hosted environment is a protected preview, not a public image-processing service.
+KeepMe is a working end-to-end beta foundation with a synthetic judge path and optional live YouCam integration. The current hosted environment is a public synthetic demo, not a public personal-image processing service.
 
 Before accepting public personal images, operators must provide production credentials and quota, managed durable services, reviewed legal notices, incident and deletion procedures, vendor agreements, a governed calibration dataset, and independent accessibility and security review. The application intentionally fails closed when those controls are required but missing.
 

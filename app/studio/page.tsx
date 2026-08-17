@@ -1,6 +1,8 @@
 import { SiteHeader } from "@/components/SiteHeader";
 import { StudioApp } from "@/components/StudioApp";
+import { liveTryOnStatus } from "@/lib/runtime-capabilities";
 
 export default function StudioPage() {
-  return <div className="studio-page"><SiteHeader studio /><StudioApp /></div>;
+  const liveModeAvailable = liveTryOnStatus().available;
+  return <div className="studio-page"><SiteHeader studio /><StudioApp liveModeAvailable={liveModeAvailable} /></div>;
 }

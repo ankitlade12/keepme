@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/session-store";
 import { uploadToYouCam, YouCamConfigurationError } from "@/lib/youcam";
 import { authorizedSession } from "@/lib/session-auth";
 import { consumeRateLimit, originAllowed } from "@/lib/security";
-import { sanitizeImage, UploadValidationError } from "@/lib/upload-security";
+import { sanitizeImage, UploadSecurityUnavailableError, UploadValidationError } from "@/lib/upload-security";
 import { deleteArtifacts, putArtifact } from "@/lib/object-store";
 import { recordEvent } from "@/lib/observability";
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     return NextResponse.json({ sourceFileId, referenceFileId, provider: "youcam" }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Images could not be uploaded.";
-    const status = error instanceof YouCamConfigurationError ? 503 : error instanceof UploadValidationError ? 400 : 502;
+    const status = error instanceof YouCamConfigurationError || error instanceof UploadSecurityUnavailableError ? 503 : error instanceof UploadValidationError ? 400 : 502;
     return NextResponse.json({ error: message }, { status });
   }
 }

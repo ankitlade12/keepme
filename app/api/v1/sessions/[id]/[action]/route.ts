@@ -12,6 +12,7 @@ import { deleteArtifacts, putArtifact, readArtifact } from "@/lib/object-store";
 import { consumeRateLimit, originAllowed } from "@/lib/security";
 import { recordEvent, recordProviderUsage } from "@/lib/observability";
 import { serverConfig } from "@/lib/server-config";
+import { liveTryOnStatus } from "@/lib/runtime-capabilities";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       await recordEvent(session.tenantId, id, "generation", "controlled_fixture_started", { providerUnits: 0 });
       return NextResponse.json({ taskId, taskStatus: "running", provider: "controlled_demo", pollAfterMs: 800 }, { status: 202 });
     }
+    if (!liveTryOnStatus().available) return NextResponse.json({ error: "Live virtual try-on is temporarily unavailable while its image safety services are being configured. The controlled demo remains available." }, { status: 503 });
     const sourceFileId = body.sourceFileId ?? session.sourceFileId ?? undefined;
     const referenceFileId = body.referenceFileId ?? session.referenceFileId ?? undefined;
     if (!sourceFileId || !referenceFileId) return NextResponse.json({ error: "Live generation requires uploaded source and reference images." }, { status: 400 });
@@ -92,6 +94,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
   if (action === "verify") {
     if (!session.contract) return NextResponse.json({ error: "Identity Contract is missing." }, { status: 409 });
     const body = await request.json().catch(() => ({})) as { fixture?: "pass" | "violation" | "repaired" };
+    if (!body.fixture && session.provider === "youcam" && !liveTryOnStatus().available) return NextResponse.json({ error: "Live integrity verification is temporarily unavailable." }, { status: 503 });
     try {
       if (body.fixture && session.provider !== "controlled_demo") return NextResponse.json({ error: "Controlled evidence cannot be applied to a live provider result." }, { status: 400 });
       const [sourceBytes, resultBytes] = session.sourceImage && session.resultImage
@@ -114,6 +117,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
   if (action === "repair") {
     if (!session.result?.repairSupported || !session.contract || !session.sourceImage || !session.resultImage || !session.contract.customZones[0]) return NextResponse.json({ error: "This result does not support automatic repair." }, { status: 409 });
+    if (session.provider === "youcam" && !liveTryOnStatus().available) return NextResponse.json({ error: "Live integrity repair is temporarily unavailable." }, { status: 503 });
     try {
       if (session.provider === "controlled_demo") {
         const repairedBytes = await demoImage("verified-tryon.png");

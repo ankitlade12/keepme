@@ -91,10 +91,10 @@ KeepMe does not implement or permit:
 |---|---|
 | Local guided demo | Synthetic fixtures and ephemeral adapters are allowed |
 | Local live development | Personal test images may be used only by the developer under their own provider/storage policies |
-| Protected preview | Team review with synthetic data; not approved for public uploads |
+| Hosted synthetic demo | Public review with controlled synthetic data; personal-image uploads disabled |
 | Public production | Must set `KEEPME_ALLOW_EPHEMERAL=false` and pass every readiness, legal, security, and operational gate |
 
-When ephemeral fallbacks are disabled, production startup/readiness requires Postgres, private object storage, Clerk, receipt signing, cleanup authorization, malware scanning, the integrity worker, and the configured YouCam provider.
+When ephemeral fallbacks are disabled, production live-mode readiness requires Postgres, private object storage, Clerk, receipt signing, cleanup authorization, malware scanning, the integrity worker, and the configured YouCam provider. Missing live-image services disable personal uploads without taking down the controlled synthetic demo.
 
 ## Operator Responsibilities
 

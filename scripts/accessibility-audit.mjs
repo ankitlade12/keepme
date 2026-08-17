@@ -27,16 +27,19 @@ try {
       horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }));
     if (path === "/studio") {
-      await page.getByRole("radio", { name: /Live virtual try-on/ }).click();
-      await page.waitForTimeout(100);
-      const liveRendering = await page.evaluate(() => ({
-        brokenImages: Array.from(document.images)
-          .filter((image) => !image.complete || image.naturalWidth === 0)
-          .map((image) => image.currentSrc || image.src || image.alt),
-        horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
-      }));
-      rendering.brokenImages.push(...liveRendering.brokenImages.map((image) => `live mode: ${image}`));
-      rendering.horizontalOverflow ||= liveRendering.horizontalOverflow;
+      const liveOption = page.getByRole("radio", { name: /Live virtual try-on/ });
+      if (await liveOption.isEnabled()) {
+        await liveOption.click();
+        await page.waitForFunction(() => Array.from(document.images).every((image) => image.complete));
+        const liveRendering = await page.evaluate(() => ({
+          brokenImages: Array.from(document.images)
+            .filter((image) => image.naturalWidth === 0)
+            .map((image) => image.currentSrc || image.src || image.alt),
+          horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        }));
+        rendering.brokenImages.push(...liveRendering.brokenImages.map((image) => `live mode: ${image}`));
+        rendering.horizontalOverflow ||= liveRendering.horizontalOverflow;
+      }
     }
     const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]).analyze();
     if (rendering.brokenImages.length || rendering.horizontalOverflow || browserErrors.length || result.violations.length) {

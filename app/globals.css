@@ -176,6 +176,7 @@ button { color: inherit; }
 .experience-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: -10px 0 18px; }
 .experience-option { position: relative; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 12px; min-height: 78px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255,254,250,.72); color: var(--ink); text-align: left; cursor: pointer; transition: transform .2s, border-color .2s, background .2s; }
 .experience-option:hover { transform: translateY(-1px); border-color: #9da494; }
+.experience-option:disabled { opacity: .62; cursor: not-allowed; transform: none; }
 .experience-option.selected { border-color: var(--sage-deep); background: #edf2e9; box-shadow: 0 0 0 2px rgba(49,94,72,.1); }
 .experience-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: white; color: var(--sage-deep); }
 .experience-option strong, .experience-option small { display: block; }

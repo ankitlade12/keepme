@@ -1,6 +1,6 @@
 # Production Runbook
 
-This runbook is for operators deploying KeepMe beyond the synthetic local demo. The current hosted environment is a protected preview; completing this document’s checks does not replace independent security, privacy, accessibility, and legal review.
+This runbook is for operators enabling KeepMe beyond its controlled synthetic demo. The current hosted environment publicly serves synthetic fixtures only; personal-image processing remains disabled. Completing this document’s checks does not replace independent security, privacy, accessibility, and legal review.
 
 ## Deployment Topology
 
