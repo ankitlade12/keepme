@@ -6,9 +6,8 @@ node_modules/
 out/
 
 # local secrets and environment overrides
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
 
 # test and coverage output
 coverage/
@@ -26,3 +25,8 @@ public/demo/controlled-glasses-violation.png
 public/demo/controlled-glasses-violation-v2.png
 public/demo/controlled-glasses-violation-v3.png
 public/demo/controlled-glasses-violation-v4.png
+.vercel/
+
+# Local agent provisioning metadata
+.agents/
+skills-lock.json

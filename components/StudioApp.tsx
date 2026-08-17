@@ -34,6 +34,24 @@ const progressCopy = [
 ];
 
 const protectionIcons = [CircleUserRound, Sparkles, Scissors, ImageIcon, Glasses];
+let pendingSessionRequest: Promise<{ sessionId: string }> | null = null;
+
+function createPrivateSession() {
+  if (!pendingSessionRequest) {
+    pendingSessionRequest = fetch("/api/v1/sessions", { method: "POST" })
+      .then(async (response): Promise<{ sessionId: string }> => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error ?? "A private session could not be created.");
+        return payload;
+      });
+    pendingSessionRequest.then(
+      () => { pendingSessionRequest = null; },
+      () => { pendingSessionRequest = null; },
+    );
+  }
+  return pendingSessionRequest;
+}
+
 const garmentCatalog = [
   { id: "rust-utility", name: "Rust utility jacket", detail: "Cotton twill", image: "/demo/rust-jacket.png" },
   { id: "indigo-overshirt", name: "Indigo overshirt", detail: "Dark denim", image: "/demo/indigo-overshirt.png" },
@@ -88,7 +106,6 @@ export function StudioApp() {
   const [receipt, setReceipt] = useState<SessionReceipt | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const createdSession = useRef(false);
   const objectUrls = useRef<string[]>([]);
 
   const updateCustomZones = useCallback((zones: PreserveZone[]) => {
@@ -99,17 +116,12 @@ export function StudioApp() {
   }, []);
 
   useEffect(() => {
-    if (createdSession.current) return;
-    createdSession.current = true;
     let active = true;
-    fetch("/api/v1/sessions", { method: "POST" })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error ?? "A private session could not be created.");
-        if (active) {
-          setSessionId(payload.sessionId);
-          setContract(createContract(payload.sessionId));
-        }
+    createPrivateSession()
+      .then((payload) => {
+        if (!active) return;
+        setSessionId(payload.sessionId);
+        setContract(createContract(payload.sessionId));
       })
       .catch((reason) => active && setError(reason instanceof Error ? reason.message : "A private session could not be created."));
     return () => {

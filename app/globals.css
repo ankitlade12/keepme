@@ -45,7 +45,7 @@ button { color: inherit; }
 .legal-shell .brand { margin-bottom: 42px; }
 .legal-shell h1 { margin: 8px 0 22px; font-family: Iowan Old Style, Baskerville, serif; font-size: clamp(42px, 7vw, 66px); font-weight: 500; line-height: 1; }
 .legal-shell h2 { margin: 34px 0 8px; font-size: 18px; }
-.legal-shell p { color: var(--ink-soft); }
+.legal-shell > p { color: var(--ink-soft); }
 .legal-notice { margin: 22px 0; padding: 14px; border-radius: 12px; background: var(--paper-deep); color: var(--ink-soft); }
 .auth-card { display: grid; gap: 18px; max-width: 560px; }
 

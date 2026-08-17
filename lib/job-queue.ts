@@ -31,6 +31,11 @@ export async function claimJobs(limit = 25): Promise<KeepMeJob[]> {
   }
   await ensureDatabase();
   return sql.begin(async (transaction) => {
+    await transaction`
+      update keepme_jobs
+      set status = 'queued', locked_at = null, available_at = now(), updated_at = now(), last_error = 'Worker lease expired'
+      where status = 'processing' and locked_at < now() - interval '5 minutes'
+    `;
     const jobs = await transaction<{ id: string; tenant_id: string; session_id: string; kind: JobKind; attempts: number; payload: Record<string, unknown> }[]>`
       select id, tenant_id, session_id, kind, attempts, payload from keepme_jobs
       where status = 'queued' and available_at <= now()

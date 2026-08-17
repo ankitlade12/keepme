@@ -10,8 +10,7 @@ function csvCell(value: string | number) {
 export async function GET() {
   const access = await retailerAuthorized();
   if (!access.authorized) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  const tenantId = access.email?.split("@")[1] ? `org_${access.email.split("@")[1].replace(/[^a-z0-9.-]/g, "")}` : "public";
-  const analytics = await retailerAnalytics(tenantId);
+  const analytics = await retailerAnalytics(access.tenantId ?? "public");
   const rows = [
     ["metric", "value", "note"],
     ...analytics.metrics.map((metric) => [metric.label, metric.value, metric.note]),

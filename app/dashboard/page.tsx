@@ -7,8 +7,7 @@ import { retailerAnalytics } from "@/lib/retailer-analytics";
 export default async function DashboardPage() {
   const access = await retailerAuthorized();
   if (!access.authorized) redirect("/signin?callbackUrl=/dashboard");
-  const tenantId = access.email?.split("@")[1] ? `org_${access.email.split("@")[1].replace(/[^a-z0-9.-]/g, "")}` : "public";
-  const analytics = await retailerAnalytics(tenantId);
+  const analytics = await retailerAnalytics(access.tenantId ?? "public");
   const metrics = analytics.metrics;
   const failures = analytics.failures;
   const values = [62, 69, 65, 77, 74, 82, 79, 86];

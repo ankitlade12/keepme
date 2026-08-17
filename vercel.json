@@ -1,11 +1,32 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    { "path": "/api/internal/maintenance", "schedule": "*/5 * * * *" }
+  "services": {
+    "web": {
+      "root": ".",
+      "framework": "nextjs",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "integrity",
+          "format": "url",
+          "env": "INTEGRITY_URL"
+        }
+      ],
+      "functions": {
+        "app/api/v1/sessions/[id]/uploads/route.ts": { "maxDuration": 60 },
+        "app/api/v1/sessions/[id]/[action]/route.ts": { "maxDuration": 60 },
+        "app/api/internal/maintenance/route.ts": { "maxDuration": 60 }
+      }
+    },
+    "integrity": {
+      "root": "services/integrity-worker/",
+      "entrypoint": "Dockerfile"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "web" } }
   ],
-  "functions": {
-    "app/api/v1/sessions/[id]/uploads/route.ts": { "maxDuration": 60 },
-    "app/api/v1/sessions/[id]/[action]/route.ts": { "maxDuration": 60 },
-    "app/api/internal/maintenance/route.ts": { "maxDuration": 60 }
-  }
+  "crons": [
+    { "path": "/api/internal/maintenance", "schedule": "0 2 * * *" }
+  ]
 }
