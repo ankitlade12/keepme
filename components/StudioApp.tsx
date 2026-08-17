@@ -536,7 +536,7 @@ export function StudioApp({ liveModeAvailable }: { liveModeAvailable: boolean })
             <span className="eyebrow">Deletion confirmed</span>
             <h2>Your images are gone.</h2>
             <p>The source photo, garment upload, generated image, preserve masks, heatmaps, and repair artifacts are no longer accessible. We retained only a non-identifying deletion event.</p>
-            <div className="studio-actions" style={{ justifyContent: "center" }}><Link className="btn btn-secondary" href="/">Back to home</Link><button className="btn btn-primary" onClick={() => window.location.reload()}>Start another try-on</button></div>
+            <div className="studio-actions" style={{ justifyContent: "center" }}><Link className="btn btn-secondary" href="/" prefetch={false}>Back to home</Link><button className="btn btn-primary" onClick={() => window.location.reload()}>Start another try-on</button></div>
           </section>
         )}
       </main>

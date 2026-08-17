@@ -8,7 +8,7 @@ export default function NotFound() {
       <span className="eyebrow">404 · Not found</span>
       <h2>This page slipped out of frame.</h2>
       <p>The page does not exist, but your private try-on can start from a clean session.</p>
-      <div className="studio-actions" style={{ justifyContent: "center" }}><Link className="btn btn-secondary" href="/">Return home</Link><Link className="btn btn-primary" href="/studio">Start safe try-on</Link></div>
+      <div className="studio-actions" style={{ justifyContent: "center" }}><Link className="btn btn-secondary" href="/" prefetch={false}>Return home</Link><Link className="btn btn-primary" href="/studio" prefetch={false}>Start safe try-on</Link></div>
     </main>
   );
 }

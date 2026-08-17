@@ -35,7 +35,7 @@ export default function Home() {
               <h1 className="serif">Change the clothes, <em>not the person.</em></h1>
               <p className="hero-copy">Tell AI what it may edit. KeepMe verifies that your face, skin, body, hair, and personally important details still look like you.</p>
               <div className="hero-actions">
-                <Link className="btn btn-primary btn-wide" href="/studio">Try a garment safely <ArrowRight size={16} /></Link>
+                <Link className="btn btn-primary btn-wide" href="/studio" prefetch={false}>Try a garment safely <ArrowRight size={16} /></Link>
                 <a className="btn btn-secondary" href="#how-it-works">See how it works</a>
               </div>
               <div className="micro-copy">
@@ -101,13 +101,13 @@ export default function Home() {
                 <div className="community-icon"><HeartHandshake size={26} /></div>
                 <h3>Preserve what matters—without explaining why.</h3>
                 <p>Glasses, scars, assistive objects, religious garments, hair, or any custom region. The user draws the boundary; KeepMe never infers the meaning.</p>
-                <Link className="text-link" href="/studio">Experience the shopper flow <ArrowRight size={14} /></Link>
+                <Link className="text-link" href="/studio" prefetch={false}>Experience the shopper flow <ArrowRight size={14} /></Link>
               </article>
               <article className="community-card">
                 <div className="community-icon"><Sparkles size={26} /></div>
                 <h3>Learn where VTO fails—without seeing customer photos.</h3>
                 <p>Aggregated reason codes reveal garment and model failure patterns. Small cohorts are suppressed and no demographic labels are generated.</p>
-                <Link className="text-link" href="/dashboard">View retailer insights <ArrowRight size={14} /></Link>
+                <Link className="text-link" href="/dashboard" prefetch={false}>View retailer insights <ArrowRight size={14} /></Link>
               </article>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function Home() {
         <section className="section" style={{ paddingTop: 0 }}>
           <div className="container cta-panel">
             <div><h2>Keep the garment preview. Keep yourself, too.</h2><p>Build your first Identity Contract in under a minute.</p></div>
-            <Link className="btn btn-primary btn-wide" href="/studio">Start safe try-on <ArrowRight size={16} /></Link>
+            <Link className="btn btn-primary btn-wide" href="/studio" prefetch={false}>Start safe try-on <ArrowRight size={16} /></Link>
           </div>
         </section>
       </main>

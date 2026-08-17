@@ -1,5 +1,5 @@
 import { ClerkProvider, SignIn } from "@clerk/nextjs";
-import Link from "next/link";
+import Link from "@/components/NoPrefetchLink";
 import { clerkConfigured } from "@/lib/clerk-config";
 
 export default async function SignInPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
