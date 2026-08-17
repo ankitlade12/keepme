@@ -22,7 +22,7 @@ const csp = [
   `img-src 'self' blob: data: https://img.clerk.com`,
   "font-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "production" ? "" : "'unsafe-eval'"} ${clerkOrigin} https://challenges.cloudflare.com https://*.protect.clerk.com`,
+  `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "production" ? "" : "'unsafe-eval'"} ${clerkOrigin} https://va.vercel-scripts.com https://challenges.cloudflare.com https://*.protect.clerk.com`,
   `connect-src 'self' ${clerkOrigin} https://*.protect.clerk.com https://clerk-telemetry.com https://*.clerk-telemetry.com`,
   "frame-src 'self' https://challenges.cloudflare.com https://*.protect.clerk.com",
   "worker-src 'self' blob:",
