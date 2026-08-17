@@ -16,6 +16,8 @@ import {
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 
+export const dynamic = "force-dynamic";
+
 const process = [
   { icon: Fingerprint, title: "Set your boundaries", text: "Choose what the AI may change. Face, hair, skin, background, and your own preserve zones stay protected." },
   { icon: WandSparkles, title: "Try on the garment", text: "YouCam generates the apparel preview from your photo and selected clothing reference." },

@@ -27,22 +27,6 @@ const schema = z.object({
 
 export const serverConfig = schema.parse(process.env);
 
-export function assertProductionConfiguration() {
-  if (serverConfig.NODE_ENV !== "production" || serverConfig.KEEPME_ALLOW_EPHEMERAL) return;
-  const missing = [
-    ["DATABASE_URL", serverConfig.DATABASE_URL],
-    ["BLOB_READ_WRITE_TOKEN", serverConfig.BLOB_READ_WRITE_TOKEN],
-    ["CLERK_SECRET_KEY", serverConfig.CLERK_SECRET_KEY],
-    ["NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", serverConfig.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY],
-    ["RECEIPT_SIGNING_SECRET", serverConfig.RECEIPT_SIGNING_SECRET],
-    ["CRON_SECRET", serverConfig.CRON_SECRET],
-    ["MALWARE_SCAN_URL", serverConfig.MALWARE_SCAN_URL],
-    ["INTEGRITY_WORKER_URL or INTEGRITY_URL", serverConfig.INTEGRITY_WORKER_URL ?? serverConfig.INTEGRITY_URL],
-    ["INTEGRITY_WORKER_TOKEN", serverConfig.INTEGRITY_WORKER_TOKEN],
-  ].filter(([, value]) => !value).map(([name]) => name);
-  if (missing.length) throw new Error(`Production configuration is incomplete: ${missing.join(", ")}`);
-}
-
 export function retailerAllowlist() {
   return new Set(serverConfig.RETAILER_EMAIL_ALLOWLIST.split(",").map((value) => value.trim().toLowerCase()).filter(Boolean));
 }

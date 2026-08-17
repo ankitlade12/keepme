@@ -16,7 +16,7 @@ KeepMe is not identity verification, face recognition, medical analysis, or a gu
 
 **Demo data:** entirely synthetic<br>
 **Default demo:** deterministic and credential-free<br>
-**Hosted product:** [keepme-olive.vercel.app](https://keepme-olive.vercel.app) — public synthetic demo; personal-image uploads remain disabled until the scanner and integrity services are configured
+**Hosted product:** [keepme-olive.vercel.app](https://keepme-olive.vercel.app) — guided synthetic demo plus fail-closed live YouCam mode
 
 ## Quick Highlights
 
@@ -42,7 +42,7 @@ KeepMe is not identity verification, face recognition, medical analysis, or a gu
 | Receipt verification | `/api/v1/receipts/verify` | Independent signed-receipt verification |
 | Public notices | `/privacy`, `/terms`, `/security` | Product privacy, terms, and security language |
 
-The hosted guided path is public and uses only the synthetic assets in [`public/demo`](public/demo/). Live personal-image processing is intentionally unavailable until every production safety dependency passes the readiness check.
+The hosted guided path is public and uses only the synthetic assets in [`public/demo`](public/demo/). Live mode is exposed only when its private scanner, integrity worker, durable stores, credentials, and production safety checks are available at runtime.
 
 ## Architecture Overview
 
@@ -124,7 +124,7 @@ graph TB
 | Virtual try-on | YouCam AI Clothes v3 | Server-side garment generation with bounded polling and credit guards |
 | Consistency signal | YouCam Skin Analysis v2.1 | Optional source/result skin-signal comparison |
 | Integrity worker | FastAPI, MediaPipe, OpenCV | Face-landmark alignment and person segmentation without recognition |
-| Upload boundary | Sharp and scanner adapter | Decode, size/pixel limits, metadata removal, re-encoding, and malware decision |
+| Upload boundary | Sharp and private ClamAV service | Decode, size/pixel limits, metadata removal, re-encoding, and authenticated malware decision |
 | Proof | JOSE, SHA-256, signed JWS | Contract/result binding and receipt verification |
 | Operations | OpenTelemetry and Vercel | Structured events, runtime traces, analytics, and performance visibility |
 
@@ -234,7 +234,7 @@ Open <http://localhost:3000>. The guided demo needs no provider credentials.
 
 ### Live YouCam Mode
 
-Set the server-only `YOUCAM_API_KEY`, restart the app, and select **Live virtual try-on** in `/studio`. Live generation consumes provider units. The browser never receives the API key or upstream result URL.
+For local development, set the server-only `YOUCAM_API_KEY`, restart the app, and select **Live virtual try-on** in `/studio`. A fail-closed production deployment also needs the scanner and integrity worker tokens and URLs described in [Configuration](#configuration). Live generation consumes provider units. The browser never receives the API key or upstream result URL.
 
 The current adapter uses:
 
@@ -257,7 +257,7 @@ npm run check:production  # fail-closed dependency and secret gate
 Current local result:
 
 ```text
-Tests  15 passed
+Tests  22 passed
 Lint   passed
 Build  passed
 Flow   guided contract → finding → repair → receipt → deletion passed
@@ -290,6 +290,7 @@ keepme/
 ├── components/                  # Product UI and Preserve Map interaction
 ├── lib/                         # Contracts, integrity, storage, auth, receipts, and providers
 ├── services/integrity-worker/   # Private FastAPI + MediaPipe/OpenCV service
+├── services/malware-scanner/    # Private authenticated ClamAV service
 ├── db/migrations/               # Durable Postgres schema
 ├── scripts/                     # Smoke, readiness, migration, accessibility, and calibration tools
 ├── public/demo/                 # Synthetic controlled fixtures only
@@ -345,8 +346,8 @@ Mutation routes enforce same-origin requests. Sensitive session responses use `n
 
 The repository supports two deployment shapes:
 
-- **Vercel Services:** `vercel.json` deploys the Next.js web service and privately binds the integrity worker.
-- **Standalone container:** the root `Dockerfile` produces a non-root Next.js standalone image; deploy the integrity worker separately and set `INTEGRITY_WORKER_URL`.
+- **Vercel Services:** `vercel.json` deploys the Next.js web service and privately binds the integrity and malware-scanner services.
+- **Standalone container:** the root `Dockerfile` produces a non-root Next.js standalone image; deploy both supporting services separately and set `INTEGRITY_WORKER_URL` and `MALWARE_SCAN_URL`.
 
 Before public deployment:
 
@@ -388,7 +389,7 @@ The novelty is the combination: **shopper-owned boundaries + measured evidence +
 
 ## Production Boundary
 
-KeepMe is a working end-to-end beta foundation with a synthetic judge path and optional live YouCam integration. The current hosted environment is a public synthetic demo, not a public personal-image processing service.
+KeepMe is a working end-to-end beta foundation with a deterministic synthetic path and a fail-closed live YouCam integration. The hosted environment enables live mode only while its required private services and credentials are present; that technical gate is not a substitute for operator, legal, security, accessibility, or calibration approval.
 
 Before accepting public personal images, operators must provide production credentials and quota, managed durable services, reviewed legal notices, incident and deletion procedures, vendor agreements, a governed calibration dataset, and independent accessibility and security review. The application intentionally fails closed when those controls are required but missing.
 

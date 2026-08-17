@@ -10,6 +10,12 @@
           "service": "integrity",
           "format": "url",
           "env": "INTEGRITY_URL"
+        },
+        {
+          "type": "service",
+          "service": "scanner",
+          "format": "url",
+          "env": "MALWARE_SCAN_URL"
         }
       ],
       "functions": {
@@ -20,6 +26,10 @@
     },
     "integrity": {
       "root": "services/integrity-worker/",
+      "entrypoint": "Dockerfile"
+    },
+    "scanner": {
+      "root": "services/malware-scanner/",
       "entrypoint": "Dockerfile"
     }
   },

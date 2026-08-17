@@ -66,7 +66,7 @@ Every arrow crossing the web/API boundary requires validation, authorization, bo
 - 10 MB upload and 24 MP decoded-image limits.
 - Generated internal filenames; original names are not used as identity metadata.
 - Metadata stripping and safe image re-encoding with Sharp.
-- Authenticated scanner adapter; scanning is mandatory when production runs fail closed.
+- Private authenticated ClamAV service; scanning is mandatory when production runs fail closed.
 - Uploaded content is never executed.
 
 ### Storage and Database
@@ -121,7 +121,7 @@ The repository includes controls and adapters, but the following evidence cannot
 - incident response, vulnerability intake, processor agreements, breach notification, and data-subject request procedures;
 - jurisdiction-specific privacy, consumer, accessibility, and retailer-contract review.
 
-The hosted synthetic demo must not be treated as evidence that the controls required for public personal-image processing are complete.
+Successful hosted live-mode checks must not be treated as evidence that every legal, organizational, calibration, accessibility, and independent-security requirement for public personal-image processing is complete.
 
 ## Release Security Checklist
 

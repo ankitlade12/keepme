@@ -1,6 +1,6 @@
 # Production Runbook
 
-This runbook is for operators enabling KeepMe beyond its controlled synthetic demo. The current hosted environment publicly serves synthetic fixtures only; personal-image processing remains disabled. Completing this document’s checks does not replace independent security, privacy, accessibility, and legal review.
+This runbook is for operators enabling or maintaining KeepMe live mode beyond its controlled synthetic demo. The hosted application remains fail-closed: missing image-safety services disable live uploads without disabling the guided fixture. Completing this document’s checks does not replace independent security, privacy, accessibility, and legal review.
 
 ## Deployment Topology
 
@@ -12,12 +12,12 @@ This runbook is for operators enabling KeepMe beyond its controlled synthetic de
 | Authentication | Clerk with an exact retailer allowlist and organization/user tenant isolation |
 | Virtual try-on | YouCam Clothes v3 and optional Skin Analysis v2.1 through server-only credentials |
 | Integrity analysis | Authenticated private `services/integrity-worker` deployment |
-| Upload scanning | Authenticated scanner returning `{ "clean": true }` |
+| Upload scanning | Authenticated private `services/malware-scanner` ClamAV deployment |
 | Proof | Stable, rotated receipt-signing secret |
 | Telemetry | OpenTelemetry plus privacy-filtered events and operator alerts |
 | Cleanup | Authenticated maintenance route invoked on a monitored schedule |
 
-[`vercel.json`](../vercel.json) defines a Vercel Services deployment with a private integrity-service binding and a daily fallback cron. Other platforms must deploy the worker separately and set `INTEGRITY_WORKER_URL`.
+[`vercel.json`](../vercel.json) defines a Vercel Services deployment with private integrity-worker and malware-scanner bindings plus a daily fallback cron. Other platforms must deploy both services separately and set `INTEGRITY_WORKER_URL` and `MALWARE_SCAN_URL`.
 
 ## Required Roles
 
@@ -100,7 +100,7 @@ npm run db:migrate
 
 ### 5. Deploy Supporting Services
 
-Deploy the integrity worker from [`services/integrity-worker`](../services/integrity-worker/) and the authenticated malware scanner.
+Deploy the integrity worker from [`services/integrity-worker`](../services/integrity-worker/) and the ClamAV scanner from [`services/malware-scanner`](../services/malware-scanner/). Vercel deploys and binds both from [`vercel.json`](../vercel.json); other platforms must provide their private URLs explicitly.
 
 Verify:
 
@@ -118,7 +118,7 @@ Verify:
 3. Deploy or update the integrity worker and scanner.
 4. Deploy the Next.js web/API service.
 5. Confirm the custom domain, TLS, Clerk production domain, and allowed redirect/origin settings.
-6. Verify `GET /api/health` returns HTTP 200 with `database: "connected"` and `objectStorage: "durable"`.
+6. Verify `GET /api/health` returns HTTP 200 with `database: "connected"`, `objectStorage: "durable"`, and `liveTryOn: "ready"`.
 7. Run the guided smoke test against the deployment:
 
 ```bash

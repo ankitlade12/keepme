@@ -49,7 +49,7 @@ graph TB
         CLOTHES[YouCam Clothes v3]
         SKIN[YouCam Skin Analysis v2.1]
         VISION[MediaPipe/OpenCV integrity worker]
-        SCANNER[Malware scanner]
+        SCANNER[Private ClamAV scanner]
     end
 
     STUDIO --> API
@@ -65,7 +65,7 @@ graph TB
     JOBS --> VISION
 ```
 
-On Vercel, [`vercel.json`](../vercel.json) deploys the web app and integrity worker as separate services and binds the worker privately through `INTEGRITY_URL`. The root [`Dockerfile`](../Dockerfile) builds a non-root standalone Next.js image for other platforms.
+On Vercel, [`vercel.json`](../vercel.json) deploys the web app, integrity worker, and ClamAV scanner as separate services. Private bindings inject `INTEGRITY_URL` and `MALWARE_SCAN_URL` into the web service at runtime. The root [`Dockerfile`](../Dockerfile) builds a non-root standalone Next.js image for other platforms.
 
 ## Session Lifecycle
 
@@ -106,6 +106,7 @@ Guided mode follows the same contract, decision, receipt, and deletion states bu
 | Studio UI | Collect inputs, contract choices, consent, and final decisions | Receive provider secrets or expose upstream result URLs |
 | Session API | Enforce lifecycle, authorization, rate limits, and response policy | Trust client-supplied tenant ownership |
 | Upload boundary | Decode bytes, enforce JPEG/PNG and size limits, strip metadata, scan | Execute uploaded content or preserve original filenames |
+| Malware scanner | Authenticate requests and inspect reconstructed image bytes with ClamAV | Accept browser traffic directly or treat an unavailable engine as clean |
 | YouCam adapter | Upload, create tasks, poll with bounds, record usage | Start unbounded or duplicate provider work |
 | Integrity engine | Combine measured signals, hard rules, and confidence | Convert unreliable evidence into a pass |
 | Integrity worker | Measure face-landmark and silhouette stability | Recognize identity or persist embeddings |
@@ -170,13 +171,13 @@ Implemented in the repository:
 - Postgres, private object-store, job, event, usage, and rate-limit adapters
 - Ephemeral local fallbacks for the synthetic demo
 - Clerk retailer authentication and tenant isolation
-- Upload decoding, metadata stripping, re-encoding, and scanner adapter
+- Upload decoding, metadata stripping, re-encoding, and private authenticated ClamAV service
 - Private MediaPipe/OpenCV integrity service
 - Cleanup, deletion verification, health checks, CI, and operational configuration
 
 Required before public personal-image traffic:
 
-- Production credentials, quotas, private stores, scanner, domain, and monitoring destination
+- Production credentials, quotas, private stores, domain, and monitoring destination
 - Credential rotation, backup/restore testing, deletion drills, and incident ownership
 - Governed calibration data and frozen reviewed thresholds
 - Independent accessibility, penetration, upload-parser, authorization, and tenant-isolation testing
