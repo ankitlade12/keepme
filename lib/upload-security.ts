@@ -5,7 +5,7 @@ import { serverConfig } from "./server-config";
 import { productionSafetyRequired } from "./runtime-capabilities";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const MAX_PIXELS = 24_000_000;
+const MAX_PIXELS = 20_000_000;
 const SCANNER_RETRY_ATTEMPTS = 30;
 
 export class UploadValidationError extends Error {}
@@ -23,7 +23,7 @@ export async function sanitizeImage(value: FormDataEntryValue | null, label: str
   }
   if (!metadata.width || !metadata.height || !["jpeg", "png"].includes(metadata.format ?? "")) throw new UploadValidationError(`${label} must contain valid JPEG or PNG bytes.`);
   if (metadata.width < 320 || metadata.height < 320) throw new UploadValidationError(`${label} must be at least 320 × 320 pixels.`);
-  if (metadata.width * metadata.height > MAX_PIXELS) throw new UploadValidationError(`${label} exceeds the 24-megapixel safety limit.`);
+  if (metadata.width * metadata.height > MAX_PIXELS) throw new UploadValidationError(`${label} exceeds the 20-megapixel safety limit.`);
   await scanForMalware(input, label);
   const bytes = await sharp(input, { limitInputPixels: MAX_PIXELS })
     .rotate()

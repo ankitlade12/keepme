@@ -1,5 +1,47 @@
-import Link from "@/components/NoPrefetchLink";
-
+import Link from "next/link";
 export default function TermsPage() {
-  return <main className="legal-page" id="main-content"><article className="legal-shell"><Link className="brand" href="/"><span className="brand-mark" />KeepMe</Link><span className="section-kicker">Effective August 16, 2026</span><h1>Terms of use</h1><p>KeepMe provides consent controls and visual-consistency evidence for apparel virtual try-on. By approving an Identity Contract, you authorize only the described processing for that session.</p><h2>Your content</h2><p>You must have permission to upload each image. Do not upload unlawful content or images of another person without their informed permission.</p><h2>Assessment limitations</h2><p>Results are probabilistic and may be incorrect or inconclusive. Review the source and result yourself. KeepMe is not identity verification, biometric authentication, medical analysis, a fairness certification, or a fit guarantee.</p><h2>Acceptable use</h2><p>Do not evade upload controls, probe other sessions, automate excessive generation, reverse engineer provider services, or use KeepMe to classify sensitive characteristics.</p><h2>Availability</h2><p>Generation providers may reject, delay, or fail tasks. KeepMe may stop a session when verification quality is insufficient or a protected region changes.</p><h2>Retailers</h2><p>Retailers remain responsible for their notices, lawful basis, vendor agreements, accessibility obligations, support channels, and the claims they make using aggregate outcomes.</p></article></main>;
+  return (
+    <main className="legal-page" id="main-content">
+      <article className="legal-shell">
+        <Link className="brand" href="/">
+          AsShown
+        </Link>
+        <h1>Prototype terms</h1>
+        <p>
+          AsShown is an adult clothing-shopping research prototype. Use only
+          source images, listing excerpts, and personal photos you have
+          permission to process.
+        </p>
+        <h2>Your decisions</h2>
+        <p>
+          Seller statements, contributor reports, and model observations can be
+          incomplete or wrong. Generated previews do not establish fit, comfort,
+          material authenticity, safety, opacity, or functional construction.
+          You decide what to investigate or purchase.
+        </p>
+        <h2>Contributions</h2>
+        <p>
+          Submit only product-related statements with accurate variant context.
+          Do not publish personal information, personal photos, or unsupported
+          accusations. Moderators may decline or remove contributions;
+          contributors can appeal or withdraw their own reports.
+        </p>
+        <h2>Availability and costs</h2>
+        <p>
+          Generation and optional language assistance depend on configured
+          providers and bounded project allowances. No paid subscription or
+          purchase flow is enabled. A provider may charge a submitted generation
+          even if local polling is stopped.
+        </p>
+        <h2>Before a broader launch</h2>
+        <p>
+          These notices describe the prototype. Formal commercial terms and
+          jurisdiction-specific obligations require review before public beta.
+        </p>
+        <Link className="as-primary" href="/check">
+          Return to your workspace
+        </Link>
+      </article>
+    </main>
+  );
 }

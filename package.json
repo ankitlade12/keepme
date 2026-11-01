@@ -1,5 +1,5 @@
 {
-  "name": "keepme",
+  "name": "asshown",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,10 @@
     "check:production": "node scripts/production-readiness.mjs",
     "calibrate": "node scripts/calibrate-integrity.mjs",
     "db:migrate": "node scripts/migrate.mjs",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:asshown:api": "node scripts/asshown-api-smoke.mjs",
+    "test:asshown:browser": "node scripts/asshown-browser-smoke.mjs",
+    "test:asshown:a11y": "node scripts/asshown-a11y.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.6",
@@ -30,6 +33,7 @@
     "@vercel/blob": "^2.8.0",
     "@vercel/otel": "^2.1.3",
     "@vercel/speed-insights": "^1.3.1",
+    "ai": "7.0.159",
     "jose": "^6.2.9",
     "lucide-react": "^0.468.0",
     "next": "^16.3.1",

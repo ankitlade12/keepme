@@ -1,37 +1,64 @@
-import { ClerkProvider, SignIn } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 import Link from "@/components/NoPrefetchLink";
 import { clerkConfigured } from "@/lib/clerk-config";
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ callbackUrl?: string }> }) {
-  const { callbackUrl = "/dashboard" } = await searchParams;
-  const safeCallbackUrl = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/dashboard";
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl = "/check" } = await searchParams;
+  const safeCallbackUrl =
+    callbackUrl.startsWith("/") && !callbackUrl.startsWith("//")
+      ? callbackUrl
+      : "/check";
 
   if (!clerkConfigured()) {
     return (
       <main className="legal-page" id="main-content">
         <div className="legal-shell auth-card">
-          <Link className="brand" href="/"><span className="brand-mark" />KeepMe</Link>
-          <span className="section-kicker">Retailer access</span>
-          <h1>Retailer sign-in is not configured</h1>
-          <p>This environment does not have Clerk credentials. Shopper sessions remain available through their private session capability, but retailer data stays inaccessible.</p>
-          <Link className="text-link" href="/">Return home</Link>
+          <Link className="brand" href="/">
+            <span className="brand-mark" />
+            AsShown
+          </Link>
+          <span className="section-kicker">Saved shopping decisions</span>
+          <h1>Account sign-in is not configured</h1>
+          <p>
+            The account service has not been connected here yet. You can still
+            use the private guest workspace and export your decisions.
+          </p>
+          <Link className="text-link" href="/">
+            Return home
+          </Link>
         </div>
       </main>
     );
   }
 
   return (
-    <ClerkProvider appearance={{ variables: { colorWarning: "#fff4ef" } }}>
+    <>
       <main className="legal-page" id="main-content">
         <div className="legal-shell auth-card">
-          <Link className="brand" href="/"><span className="brand-mark" />KeepMe</Link>
-          <span className="section-kicker">Retailer access</span>
-          <h1>Sign in to your integrity workspace</h1>
-          <p>Retailer data is isolated by organization. Shopper images are never shown in this console.</p>
-          <SignIn routing="path" path="/signin" fallbackRedirectUrl={safeCallbackUrl} />
-          <Link className="text-link" href="/">Return home</Link>
+          <Link className="brand" href="/">
+            <span className="brand-mark" />
+            AsShown
+          </Link>
+          <span className="section-kicker">Saved shopping decisions</span>
+          <h1>Keep your decisions with you</h1>
+          <p>
+            Save your requirements, decision history, and contributions in your
+            own account. Personal-photo sharing stays a separate choice.
+          </p>
+          <SignIn
+            routing="path"
+            path="/signin"
+            fallbackRedirectUrl={safeCallbackUrl}
+          />
+          <Link className="text-link" href="/">
+            Return home
+          </Link>
         </div>
       </main>
-    </ClerkProvider>
+    </>
   );
 }
