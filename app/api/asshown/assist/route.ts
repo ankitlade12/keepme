@@ -1,3 +1,4 @@
+import { directModel } from "@/lib/asshown/model";
 import {
   paidFeaturesEnabled,
   recordProcessingConsent,
@@ -33,12 +34,8 @@ export async function POST(request: NextRequest) {
       { error: "Confirm text processing consent and provide valid input." },
       { status: 400 },
     );
-  const model = process.env.ASSHOWN_AI_MODEL;
-  if (
-    !(await paidFeaturesEnabled()) ||
-    !model ||
-    (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN)
-  )
+  const provider = directModel("text");
+  if (!(await paidFeaturesEnabled()) || !provider)
     return NextResponse.json(
       {
         error:
@@ -61,10 +58,10 @@ export async function POST(request: NextRequest) {
     );
   const { action, text } = parsed.data;
   try {
-    await recordProcessingConsent(a.owner, parsed.data.action, model);
+    await recordProcessingConsent(a.owner, parsed.data.action, provider.name);
     if (action === "interpret") {
       const { output } = await generateText({
-        model,
+        model: provider.model,
         maxRetries: 0,
         maxOutputTokens: 1500,
         abortSignal: AbortSignal.timeout(30000),
@@ -85,11 +82,11 @@ export async function POST(request: NextRequest) {
           id: crypto.randomUUID(),
         })),
         reviewRequired: true,
-        model,
+        model: provider.name,
       });
     }
     const { output } = await generateText({
-      model,
+      model: provider.model,
       maxRetries: 0,
       maxOutputTokens: 2500,
       abortSignal: AbortSignal.timeout(30000),
@@ -111,7 +108,7 @@ export async function POST(request: NextRequest) {
       language: "Spanish",
       machineTranslated: true,
       reviewRequired: true,
-      model,
+      model: provider.name,
     });
   } catch {
     return NextResponse.json(

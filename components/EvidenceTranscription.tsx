@@ -48,7 +48,7 @@ export function EvidenceTranscription({
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
         />
-        Allow this saved image to be processed by the AI service for text
+        Allow this saved image to be sent directly to Google Gemini for text
         extraction.
       </label>
       <button

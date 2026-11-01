@@ -1,3 +1,4 @@
+import { directModel } from "@/lib/asshown/model";
 import {
   paidFeaturesEnabled,
   recordProcessingConsent,
@@ -23,12 +24,8 @@ export async function POST(request: NextRequest) {
       { error: "Start a workspace first." },
       { status: 401 },
     );
-  const model = process.env.ASSHOWN_VISION_MODEL;
-  if (
-    !(await paidFeaturesEnabled()) ||
-    !model ||
-    (!process.env.AI_GATEWAY_API_KEY && !process.env.VERCEL_OIDC_TOKEN)
-  )
+  const provider = directModel("vision");
+  if (!(await paidFeaturesEnabled()) || !provider)
     return NextResponse.json(
       {
         error:
@@ -62,13 +59,13 @@ export async function POST(request: NextRequest) {
         { error: "Visual-review allowance reached." },
         { status: 429 },
       );
-    await recordProcessingConsent(a.owner, "visual review", model);
+    await recordProcessingConsent(a.owner, "visual review", provider.name);
     const [source, result] = await Promise.all([
       sanitizeImage(form.get("source"), "Product source"),
       sanitizeImage(form.get("result"), "Comparison image"),
     ]);
     const { output } = await generateText({
-      model,
+      model: provider.model,
       maxRetries: 0,
       maxOutputTokens: 2200,
       abortSignal: AbortSignal.timeout(45000),
@@ -90,7 +87,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({
       kind,
-      model,
+      model: provider.name,
       createdAt: new Date().toISOString(),
       status: "manual review required",
       observations: output.observations.map((o) => assessObservation(o, false)),

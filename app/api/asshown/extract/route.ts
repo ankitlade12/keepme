@@ -1,3 +1,4 @@
+import { directModel } from "@/lib/asshown/model";
 import {
   paidFeaturesEnabled,
   recordProcessingConsent,
@@ -38,8 +39,8 @@ export async function POST(request: NextRequest) {
       { error: "Evidence unavailable." },
       { status: 404 },
     );
-  const model = process.env.ASSHOWN_VISION_MODEL;
-  if (!model || !(await paidFeaturesEnabled()))
+  const provider = directModel("vision");
+  if (!provider || !(await paidFeaturesEnabled()))
     return NextResponse.json(
       {
         error:
@@ -56,10 +57,15 @@ export async function POST(request: NextRequest) {
       { status: 429 },
     );
   try {
-    await recordProcessingConsent(a.owner, "text extraction", model, row.id);
+    await recordProcessingConsent(
+      a.owner,
+      "text extraction",
+      provider.name,
+      row.id,
+    );
     const image = (row.data as PrivateAsset).processing;
     const { output } = await generateText({
-      model,
+      model: provider.model,
       maxRetries: 0,
       maxOutputTokens: 3500,
       abortSignal: AbortSignal.timeout(45000),
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
       ...output,
       assetId: row.id,
       reviewRequired: true,
-      model,
+      model: provider.name,
     });
   } catch {
     return NextResponse.json(
