@@ -53,3 +53,21 @@ export async function processingImage(file: File): Promise<File> {
     bitmap.close();
   }
 }
+
+// Decode local handoffs without fetch, which connect-src correctly restricts.
+export function dataImageFile(url: string, name: string): File {
+  const prefix = /^data:(image\/(?:png|jpeg));base64,/.exec(url);
+  if (!prefix || url.length > Math.ceil((10 * 1024 * 1024) / 3) * 4 + 32)
+    throw new Error("Choose a JPEG or PNG no larger than 10 MB.");
+  let decoded: string;
+  try {
+    decoded = atob(url.slice(prefix[0].length));
+  } catch {
+    throw new Error("The image handoff is not valid base64.");
+  }
+  if (!decoded.length || decoded.length > 10 * 1024 * 1024)
+    throw new Error("Choose a JPEG or PNG no larger than 10 MB.");
+  return new File([Uint8Array.from(decoded, (c) => c.charCodeAt(0))], name, {
+    type: prefix[1],
+  });
+}

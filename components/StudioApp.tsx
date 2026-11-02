@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { processingImage } from "@/lib/asshown/client-image";
+import { processingImage, dataImageFile } from "@/lib/asshown/client-image";
 import { VisualReviewPanel } from "./VisualReviewPanel";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -335,6 +335,7 @@ export function StudioApp({
   }
 
   async function defaultFile(url: string, name: string) {
+    if (url.startsWith("data:")) return dataImageFile(url, name);
     const response = await fetch(url);
     if (!response.ok) throw new Error(`The ${name} demo asset is unavailable.`);
     const blob = await response.blob();
