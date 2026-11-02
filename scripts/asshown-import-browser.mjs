@@ -17,6 +17,40 @@ try {
         },
       }),
     );
+  if (process.env.TEST_AMAZON_FIXTURES === "true") {
+    console.log(
+      "CONTROLLED API FIXTURES: browser behavior only, not live retailer verification.",
+    );
+    const variants = [
+      { asin: "B096YM16SV", color: "Black", size: "X-Large" },
+      { asin: "B096YJMFDJ", color: "Black", size: "Small" },
+      { asin: "B096YKRNVQ", color: "Black", size: "Medium" },
+      { asin: "B096YL2ZD3", color: "Red", size: "X-Large" },
+    ];
+    await page.route("**/api/asshown/import", (r) => {
+      const url = r.request().postDataJSON().url;
+      const v = variants.find((v) => url.includes(v.asin));
+      return r.fulfill(
+        v
+          ? {
+              json: {
+                mode: "imported",
+                title: "Amazon Essentials Polar Fleece Jacket",
+                brand: "Amazon Essentials",
+                productId: v.asin,
+                text: "Machine Wash Cold",
+                color: v.color,
+                size: v.size,
+                variants,
+                sourceUrl: `https://www.amazon.com/dp/${v.asin}`,
+                sourceDate: new Date().toISOString(),
+                variantConfirmed: false,
+              },
+            }
+          : { status: 422, json: { error: "Use an Amazon product link" } },
+      );
+    });
+  }
   await page.goto(`${base}/check`);
   await page
     .getByText("Add an Amazon or supported retailer link", { exact: true })
@@ -62,15 +96,72 @@ try {
   );
   assert.equal(
     await page.getByLabel("Color", { exact: true }).inputValue(),
-    "",
+    "Black",
   );
-  assert.equal(await page.getByLabel("Size", { exact: true }).inputValue(), "");
+  assert.equal(
+    await page.getByLabel("Size", { exact: true }).inputValue(),
+    "X-Large",
+  );
+  assert(
+    (await page
+      .getByLabel("Color", { exact: true })
+      .locator("option")
+      .count()) > 1,
+  );
+  await page.getByRole("checkbox", { name: /I confirm this text/ }).check();
+  const changed = page.waitForResponse(
+    (r) => r.url() === `${base}/api/asshown/import`,
+  );
+  await page.getByLabel("Size", { exact: true }).selectOption("Small");
+  const next = await (await changed).json();
+  assert.equal(next.mode, "imported", next.message);
+  assert.equal(next.productId, "B096YJMFDJ");
+  await page.waitForFunction(
+    () => document.querySelector("select")?.disabled === false,
+  );
+  assert.equal(
+    await page.getByLabel("Size", { exact: true }).inputValue(),
+    "Small",
+  );
+  assert.equal(
+    await page.getByLabel("Sku", { exact: true }).inputValue(),
+    "B096YJMFDJ",
+  );
+  assert.equal(
+    await page
+      .getByRole("checkbox", { name: /I confirm this text/ })
+      .isChecked(),
+    false,
+  );
+  // Controlled failure verifies a blocked variant does not overwrite the last successful import.
+  const failedVariant = (r) =>
+    r.fulfill({
+      json: { mode: "manual", message: "Retailer temporarily unavailable." },
+    });
+  await page.route("**/api/asshown/import", failedVariant);
+  await page.getByLabel("Size", { exact: true }).selectOption("Medium");
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Your previous selection is unchanged" })
+    .waitFor();
+  assert.equal(
+    await page.getByLabel("Size", { exact: true }).inputValue(),
+    "Small",
+  );
+  assert.equal(
+    await page.getByLabel("Sku", { exact: true }).inputValue(),
+    "B096YJMFDJ",
+  );
+  await page.unroute("**/api/asshown/import", failedVariant);
+  console.log(
+    "Amazon dropdowns and variant re-import passed; controlled failure preserves previous selection.",
+  );
   await page.screenshot({
     path: "artifacts/full-qa/amazon-import-success.png",
     fullPage: true,
   });
   console.log(
-    "Real Amazon listing extracted and populated in browser; variant confirmation still required: passed.",
+    "Amazon listing populated in browser; variant confirmation still required: passed.",
   );
   await page.reload();
   await page

@@ -3,6 +3,7 @@ import { gzipSync, deflateSync, brotliCompressSync } from "node:zlib";
 import { describe, it, expect } from "vitest";
 import {
   amazonProduct,
+  amazonVariants,
   parseAmazonProduct,
   decodeRetailerBody,
   permittedUrl,
@@ -143,4 +144,36 @@ it("rejects CAPTCHA, mismatched ASINs, duplicate identities and empty details", 
     ),
   ])
     expect(() => parseAmazonProduct(html, "B096YM16SV")).toThrow();
+});
+
+const variantFixture = JSON.stringify({
+  dimensions: ["material_type", "color_name", "size_name"],
+  dimensionValuesDisplayData: {
+    B096YM16SV: ["Recycled", "Black", "X-Large"],
+    B096YJMFDJ: ["Recycled", "Black", "Small"],
+    B096YL2ZD3: ["Recycled", "Red", "X-Large"],
+    B012345678: ["Other material", "Blue", "Small"],
+  },
+});
+it("extracts the selected variant and real combinations without mixing other materials", () => {
+  const result = amazonVariants(variantFixture, "B096YM16SV");
+  expect(result.color).toBe("Black");
+  expect(result.size).toBe("X-Large");
+  expect(result.variants).toHaveLength(3);
+  expect(result.variants.find((v) => v.size === "Small")?.asin).toBe(
+    "B096YJMFDJ",
+  );
+  expect(result.variants.some((v) => v.color === "Blue")).toBe(false);
+});
+it("keeps manual fields for absent, malformed, ambiguous or mismatched variant data", () => {
+  for (const html of [
+    "<html>no variants</html>",
+    variantFixture.replace('"dimensions":', '"missing":'),
+    variantFixture.replace('"B096YM16SV":', '"INVALID":'),
+    variantFixture.replace('"Red","X-Large"', '"Black","X-Large"'),
+    variantFixture
+      .replace('"Small"', '"' + "x".repeat(81) + '"')
+      .replace('"X-Large"', '"' + "x".repeat(81) + '"'),
+  ])
+    expect(amazonVariants(html, "B096YM16SV").variants).toEqual([]);
 });

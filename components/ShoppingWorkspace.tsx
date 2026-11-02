@@ -136,23 +136,31 @@ export function ShoppingWorkspace({
     if (deleteOpen) deleteDialog.current?.showModal();
     else deleteDialog.current?.close();
   }, [deleteOpen]);
+  const [variants, setVariants] = useState<
+    Array<{ asin: string; color: string; size: string }>
+  >([]);
   const expires = useRef(0);
   const initialized = useRef(false);
   useEffect(() => {
     fetch("/api/asshown/workspace").catch(() => {});
   }, []);
-  async function importUrlListing() {
+  async function importUrlListing(url = importUrl, changingVariant = false) {
     setBusy(true);
     setError("");
     try {
       const r = await fetch("/api/asshown/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: importUrl }),
+        body: JSON.stringify({ url }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error);
       if (data.mode === "manual") {
+        if (changingVariant)
+          throw new Error(
+            `Could not load that variant. Your previous selection is unchanged. ${data.message}`,
+          );
+        setVariants([]);
         setDraft((current) => ({
           ...current,
           sku: data.productId,
@@ -162,8 +170,13 @@ export function ShoppingWorkspace({
         }));
         setMessage(data.message);
       } else {
+        setVariants(data.variants ?? []);
+        setImportUrl(data.sourceUrl);
+        if (changingVariant) setImages([]);
         setDraft({
           ...blank,
+          color: data.color ?? "",
+          size: data.size ?? "",
           title: data.title,
           sku: data.productId || "",
           brand: data.brand,
@@ -438,6 +451,7 @@ export function ShoppingWorkspace({
     setSelected(id);
     setStep(1);
     setDraft(blank);
+    setVariants([]);
     setImages([]);
     setError("");
   }
@@ -614,7 +628,7 @@ export function ShoppingWorkspace({
                       <button
                         className="as-secondary"
                         disabled={busy || !importUrl}
-                        onClick={importUrlListing}
+                        onClick={() => void importUrlListing()}
                       >
                         Import listing
                       </button>
@@ -649,16 +663,66 @@ export function ShoppingWorkspace({
                           {k === "brand" || k === "retailer"
                             ? " (optional)"
                             : ""}
-                          <input
-                            maxLength={80}
-                            value={draft[k]}
-                            onChange={(e) =>
-                              setDraft({ ...draft, [k]: e.target.value })
-                            }
-                          />
+                          {(k === "color" || k === "size") &&
+                          variants.length > 0 ? (
+                            <select
+                              aria-label={k === "color" ? "Color" : "Size"}
+                              value={draft[k]}
+                              disabled={busy}
+                              onChange={(e) => {
+                                const variant = variants.find(
+                                  (v) =>
+                                    v[k] === e.target.value &&
+                                    (k === "color"
+                                      ? v.size === draft.size
+                                      : v.color === draft.color),
+                                );
+                                if (variant)
+                                  void importUrlListing(
+                                    `https://www.amazon.com/dp/${variant.asin}`,
+                                    true,
+                                  );
+                              }}
+                            >
+                              {[
+                                ...new Set(
+                                  variants
+                                    .filter((v) =>
+                                      k === "color"
+                                        ? v.size === draft.size
+                                        : v.color === draft.color,
+                                    )
+                                    .map((v) => v[k]),
+                                ),
+                              ].map((value) => (
+                                <option key={value} value={value}>
+                                  {value}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              maxLength={80}
+                              value={draft[k]}
+                              onChange={(e) =>
+                                setDraft({
+                                  ...draft,
+                                  [k]: e.target.value,
+                                  confirmed: false,
+                                })
+                              }
+                            />
+                          )}
                         </label>
                       ))}
                     </div>
+                    {variants.length > 0 && (
+                      <p className="as-muted" role="status">
+                        {busy
+                          ? "Loading the selected Amazon variant…"
+                          : "Colors and sizes come from this Amazon listing. Choices show matching combinations, not a stock guarantee. Changing either reloads its details and clears attached photos; review before confirming."}
+                      </p>
+                    )}
                     <label className="as-field">
                       Listing text
                       <textarea
@@ -1834,6 +1898,7 @@ export function ShoppingWorkspace({
                 setNotes([]);
                 setImages([]);
                 setDraft(blank);
+                setVariants([]);
                 setVersion(1);
                 setImportUrl("");
                 setProfileName("");

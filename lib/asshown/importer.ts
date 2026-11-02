@@ -72,6 +72,7 @@ async function fetchPublic(url: URL) {
           headers: {
             "User-Agent": "AsShownProductImport/1.0",
             Accept: "text/html,text/plain",
+            "Accept-Encoding": "gzip, deflate, br",
           },
           lookup: ((
             _host: unknown,
@@ -93,7 +94,7 @@ async function fetchPublic(url: URL) {
           let size = 0;
           res.on("data", (chunk: Buffer) => {
             size += chunk.length;
-            if (size > 1024 * 1024) {
+            if (size > 4 * 1024 * 1024) {
               req.destroy(new Error("The retailer page is too large."));
               return;
             }
@@ -168,6 +169,82 @@ export function parseProduct(html: string) {
       .join("\n"),
   };
 }
+function embeddedJson(html: string, key: string): unknown {
+  const match = new RegExp(`"${key}"\\s*:\\s*([\\[{])`).exec(html);
+  if (!match) return null;
+  const start = match.index + match[0].length - 1;
+  let depth = 0,
+    quoted = false,
+    escaped = false;
+  for (let i = start; i < Math.min(html.length, start + 200000); i++) {
+    const c = html[i];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') quoted = false;
+    } else if (c === '"') quoted = true;
+    else if (c === "[" || c === "{") depth++;
+    else if ((c === "]" || c === "}") && --depth === 0) {
+      try {
+        return JSON.parse(html.slice(start, i + 1));
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+export function amazonVariants(html: string, asin: string) {
+  const dimensions = embeddedJson(html, "dimensions");
+  const values = embeddedJson(html, "dimensionValuesDisplayData");
+  const empty = {
+    color: "",
+    size: "",
+    variants: [] as Array<{ asin: string; color: string; size: string }>,
+  };
+  if (
+    !Array.isArray(dimensions) ||
+    !dimensions.every((d) => typeof d === "string") ||
+    !values ||
+    typeof values !== "object" ||
+    Array.isArray(values)
+  )
+    return empty;
+  const colorIndex = dimensions.indexOf("color_name"),
+    sizeIndex = dimensions.indexOf("size_name");
+  if (colorIndex < 0 || sizeIndex < 0) return empty;
+  const rows = Object.entries(values).filter(
+    ([id, row]) =>
+      /^[A-Z0-9]{10}$/.test(id) &&
+      Array.isArray(row) &&
+      row.length === dimensions.length &&
+      row.every(
+        (v) => typeof v === "string" && v.trim().length > 0 && v.length <= 80,
+      ),
+  ) as Array<[string, string[]]>;
+  const selected = rows.find(([id]) => id === asin)?.[1];
+  if (!selected) return empty;
+  const variants = rows
+    .filter(([, row]) =>
+      row.every(
+        (v, i) => i === colorIndex || i === sizeIndex || v === selected[i],
+      ),
+    )
+    .map(([id, row]) => ({
+      asin: id,
+      color: row[colorIndex],
+      size: row[sizeIndex],
+    }));
+  if (
+    variants.length > 1000 ||
+    new Set(variants.map((v) => JSON.stringify([v.color, v.size]))).size !==
+      variants.length
+  )
+    return empty;
+  return { color: selected[colorIndex], size: selected[sizeIndex], variants };
+}
+
 export function parseAmazonProduct(html: string, asin: string) {
   type Node = DefaultTreeAdapterMap["node"];
   const fields = new Map<string, Node[]>();
@@ -214,6 +291,7 @@ export function parseAmazonProduct(html: string, asin: string) {
       .slice(0, 150),
     productId: asin,
     text: details.slice(0, 10000),
+    ...amazonVariants(html, asin),
   };
 }
 

@@ -2,6 +2,14 @@
 
 Scope: all 39 M/B/G functional requirements. A passing workflow is not a validated model accuracy claim or a production release approval. This report supersedes historical verification counts in STATUS.md.
 
+## Amazon variant dropdowns — 2026-11-01 client date
+
+Amazon import now reads bounded, inert JSON variant metadata rather than executing retailer scripts. It preselects the exact requested ASIN's color and size and presents only combinations listed for the same other dimensions (for example, material). The captured B096YM16SV page provides Black / X-Large and 66 combinations for recycled polyester. This is not a stock/price guarantee.
+
+Changing color or size fetches that combination's ASIN and replaces its source text and SKU only after successful import. Confirmation resets, and prior attached photos clear to avoid carrying the wrong variant into the preview. A failed request preserves the previous successful selection. Missing, malformed, ambiguous or mismatched metadata falls back to editable fields; no options are fabricated. Deleting/resetting the draft clears variant metadata.
+
+94 tests and the production build pass; lint has zero errors and 12 pre-existing warnings. Controlled browser checks pass initial selection, changing to Black / Small (B096YJMFDJ), confirmation reset, and failed-request recovery. Live local testing encountered a larger uncompressed response, then an Amazon automated-access restriction page. Downloaded and decoded bodies are now both bounded at 4 MB, and supported compression is explicitly negotiated. Final preview `asshown-fwyjgsnf9-ankitlade12-3052s-projects.vercel.app` is READY. Hosted controlled browser tests passed dropdown population, variant switching, confirmation reset and failed-request recovery. The live hosted test returned manual fallback because the response did not identify the requested ASIN. No validation was bypassed. Live automatic variant import remains blocked in this run; approved product-data access is needed for reliable operation. Fresh-browser temporary review access passed. Controlled UI checks are not evidence of reliable retailer access.
+
 ## Amazon import correction — 2026-11-02
 
 The earlier manual fallback did not prove Amazon had blocked this product. Diagnosis found that the HTTP client treated gzip-compressed bytes as UTF-8 HTML. After decompression, the 2.7 MB page was readable but did not contain the JSON-LD Product format the original parser required.
