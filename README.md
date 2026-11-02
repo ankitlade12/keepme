@@ -2,7 +2,7 @@
 
 **Next.js · React · TypeScript · YouCam Clothes v3 · OpenAI · PostgreSQL · Clerk · Vercel**
 
-[Product preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) · [CI](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml) · [Architecture](docs/architecture.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
+[Product preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) · [Architecture](docs/architecture.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
 
 > **Choose for your everyday needs. Preview the look. Keep what makes you, you.**
 
@@ -52,20 +52,6 @@ Together, the two parts connect **product evidence → shopping decision → app
 - **Human-reviewed AI assistance** — requirement suggestions, Spanish translation, OCR, and coarse garment observations.
 - **Arrival and community workflows** — compare delivered items and share moderated, correctable product notes.
 - **Private by design** — separate processing consent, owner-authorized evidence, retention controls, and deletion.
-
-## Live Deployment
-
-| Surface        | Location                                                                                  | Access                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Product        | [Current Vercel preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) | Deployment protection; request a current share link from the project owner |
-| Demo assets    | [Demo kit](public/demo-kit/README.md) · [Download ZIP](public/demo-kit.zip)               | Fictional listings, product images, synthetic shopper, and rehearsal guide |
-| Runtime status | [/api/health](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app/api/health) | Same deployment protection as the application                              |
-| Source         | [GitHub repository](https://github.com/ankitlade12/keepme)                                | This repository retains the original KeepMe name                           |
-| Verification   | [Quality workflow](.github/workflows/ci.yml)                                              | Unit, build, guided-flow, and accessibility checks                         |
-
-**Status checked November 2, 2026:** the preview is deployed. The YouCam account had **zero API units**, so fresh live generation remains unavailable until units are replenished. The application checks the balance before reserving a generation. The controlled repair demo and direct OpenAI garment review have completed the hosted workflow.
-
-A configured integration or healthy web server does not establish available provider quota. Temporary preview links are not a permanent judging-access arrangement. The narrated product video is distributed separately; generated recordings are excluded from Git.
 
 ## The Problem
 
@@ -176,35 +162,18 @@ Contribute item-specific text and optional product-only photos with publication 
 
 Accountable moderators review contributions, resolve support tickets, and can pause new paid processing with an audited reason. Reputation is not treated as a truth score. Community publication requires configured moderators and an enabled launch gate.
 
-## Judge Quick Start
+## Try the Demo
 
-Use a current preview share link or run locally. The [demo kit](public/demo-kit/README.md) contains all fictional listing text and images.
+The [demo kit](public/demo-kit/README.md) includes fictional listings, product photos, and a synthetic shopper. [Download all demo assets](public/demo-kit.zip).
 
-1. **Check an item:** choose **Explore example**, or paste the rust-jacket listing and upload its photo.
-2. **Set requirements:** keep machine washing and functional pockets essential; review sleeve preferences.
-3. **Follow the evidence:** inspect the quoted washing instruction and the unknown pocket function. Add the kit’s simulated seller reply and observe the updated findings.
-4. **Keep the decision:** shortlist the item and inspect profiles, history, or exports.
-5. **Open the studio:** select **Identity drift demo**, protect the glasses, and approve the explicitly controlled scenario.
-6. **Review and repair:** inspect the missing-glasses finding, then choose **Restore source zone & reverify**.
-7. **Review garment details:** optionally consent to OpenAI assistance, inspect both images, add corrections, and acknowledge review before export.
-8. **Finish:** approve the result, download the signed receipt, and choose **Delete images now**. Explore **Arrival check**, **Product notes**, and **Privacy & data** separately.
+1. **Explore an item:** open **Check an item → Explore example** and review its requirements.
+2. **Inspect the evidence:** see which details are supported, then add the sample seller reply to resolve the pocket question.
+3. **Save your choice:** add the item to your shortlist.
+4. **Preview and review:** open the studio and choose **Identity drift demo** to explore the glasses-protection and repair workflow.
+5. **Finish your review:** approve the result, save its receipt, and delete the session images.
+6. **Continue after delivery:** explore **Arrival check**, **Product notes**, and **Privacy & data**.
 
-The controlled scenario deliberately demonstrates an appearance change and repair. It uses synthetic fixtures and makes no live YouCam generation request. Live mode requires available API units and the configured image services; use the actual returned result rather than assume a pass.
-
-## Local Installation
-
-Requirements: Node.js 22 and npm. The optional Python services use their supplied Dockerfiles.
-
-```sh
-git clone https://github.com/ankitlade12/keepme.git
-cd keepme
-git checkout main
-npm ci
-cp .env.example .env.local
-npm run dev -- --hostname localhost --port 3001
-```
-
-Open http://localhost:3001. Product-text checks and the controlled studio demonstration do not require provider credentials. Use `localhost` with Clerk enabled. The development-only file/in-memory adapters are not deployment storage.
+The identity-drift demo is a clearly labelled controlled example using synthetic images. Live YouCam generation requires available provider credits and configured services.
 
 ## Configuration
 
@@ -233,37 +202,6 @@ Configure only the capabilities you intend to use. Keep credential values in loc
 
 See [.env.example](.env.example) and [operations](docs/operations.md) for deployment configuration.
 
-## Verification
-
-```sh
-npm test
-npx tsc --noEmit
-npm run lint
-npm run build
-
-# Install Chromium once; run with the dev server on port 3001.
-npx playwright install chromium
-node scripts/asshown-full-browser-qa.mjs
-node scripts/asshown-demo-kit-smoke.mjs
-KEEPME_URL=http://localhost:3001 npm run smoke:guided
-```
-
-Verified November 2, 2026: **87 application tests passed**, TypeScript passed, and the preview production build succeeded. Seven shopping-workspace scenarios and the hosted listing-to-repair-to-receipt journey passed. The latter included a real OpenAI review, human-confirmed export, mobile layout, and deleted-image access checks. Lint has warnings but no errors.
-
-A fresh live YouCam attempt was rejected while the account had zero units. The subsequent empty-balance check returned HTTP 402 with **zero reserved provider tasks**. Earlier live successes do not establish present availability or evaluated accuracy.
-
-Opt-in provider checks spend requests and use synthetic assets:
-
-```sh
-# Real YouCam generation; requires configured services and provider quota.
-KEEPME_URL=https://your-preview.example node --env-file=.env.local scripts/live-flow-smoke.mjs
-
-# Complete browser journey; LIVE_REVIEW=1 enables a real OpenAI review.
-ASSHOWN_URL=http://localhost:3001 LIVE_REVIEW=1 node scripts/studio-review-e2e.mjs
-```
-
-Generated reports, recordings, local credentials, and account data remain ignored. Automated browser checks are not human accessibility certification or a held-out model evaluation.
-
 ## Repository Structure
 
 ```text
@@ -287,18 +225,6 @@ keepme/
 └── .env.example
 ```
 
-## Deployment
-
-[vercel.json](vercel.json) defines the Next.js web app, private integrity worker, and private scanner. The root [Dockerfile](Dockerfile) provides a standalone web image for other hosting environments; it does not provision those dependencies.
-
-1. Provision an isolated PostgreSQL database, private Blob store, and appropriate Clerk environment.
-2. Apply session migrations with `npm run db:migrate`; provision the AsShown records table using the initialization described in [operations](docs/operations.md).
-3. Configure server secrets and private service bindings. Keep `KEEPME_ALLOW_EPHEMERAL=false` and `KEEPME_AUTO_MIGRATE=false` for deployed operation.
-4. Deploy a preview, verify the controlled journey and cleanup, then explicitly verify live provider availability.
-5. Configure monitored maintenance and a stable judge-access arrangement before submission or public rollout.
-
-Provider calls, hosting, and storage can incur costs. The current preview is not an approved production launch.
-
 ## API Surface
 
 | Route                                               | Purpose                                                          |
@@ -321,14 +247,6 @@ The retired retailer import endpoint returns HTTP 410 and makes no outbound prod
 Guest restore lasts 30 minutes and excludes uploaded photos after refresh. Account evidence has separate retention and renewal. Application deletion and downstream provider retention are separate obligations. Publication, storage, and model processing have separate consent gates.
 
 Neither an appearance score nor a signed receipt establishes fit, comfort, fabric properties, pocket function, medical suitability, or seller honesty. Unknown and conflicting evidence stays visible. See [privacy and provenance](docs/privacy.md).
-
-## Project History and Next Steps
-
-AsShown builds on the MIT-licensed KeepMe baseline, commit [`2c4053d`](https://github.com/ankitlade12/keepme/tree/2c4053db1c5b3144be29340f57a5419824db4b96). The original project is preserved in Git history, and its studio foundation continues in the current application. The AsShown expansion is merged into `main`; a separate feature-branch checkout is no longer required.
-
-The hackathon expansion adds variant-aware shopping evidence, requirements, seller replies, shortlists, account workspaces, profiles, community moderation, arrival review, language assistance, support, and the responsive AsShown interface. It also strengthens consent, duplicate-task prevention, repair lineage, and deletion behavior.
-
-Before a public launch, complete owned/licensed case evaluation, independent human review, user interviews, manual accessibility work, moderator staffing, provider-retention review, and backup/cleanup incident drills. No evaluated accuracy, reduced-return benefit, or commercial outcome is claimed. Subscription billing is not implemented.
 
 ## License
 
