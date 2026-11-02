@@ -1,0 +1,8 @@
+SIMULATED SELLER REPLY — use only in the demo:
+For DEMO-RUST-M, Rust / M: the jacket has functional pockets. Machine wash cold.
+
+OPTIONAL CONFLICT TEST — paste as a separate reply:
+For DEMO-RUST-M, Rust / M: dry-clean only.
+
+Reason for excluding the conflicting source:
+Demo seller supplied instructions for the wrong variant.

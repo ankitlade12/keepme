@@ -13,8 +13,10 @@ export const config = {
   matcher: [
     "/dashboard(.*)",
     "/signin(.*)",
+    "/signup(.*)",
     "/api/v1/retailer(.*)",
     "/api/v1/sessions(.*)",
+    "/api/asshown(.*)",
     "/__clerk/(.*)",
   ],
 };

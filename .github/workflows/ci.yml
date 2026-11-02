@@ -3,7 +3,6 @@ name: quality
 on:
   pull_request:
   push:
-    branches: [main]
 
 permissions:
   contents: read
@@ -12,6 +11,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      KEEPME_URL: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,5 +30,15 @@ jobs:
         env:
           PORT: 3000
           HOSTNAME: 127.0.0.1
+      - name: Wait for application
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$KEEPME_URL/api/health" > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/keepme-server.log
+          exit 1
       - run: npm run smoke:guided
       - run: npm run audit:a11y

@@ -100,5 +100,4 @@ Before changing production thresholds:
 - [Project overview](../README.md)
 - [Architecture and integrity policy](../docs/architecture.md)
 - [Privacy and data handling](../docs/privacy.md)
-- [Requirements traceability](../docs/requirements-traceability.md)
-- [Production runbook](../docs/production-runbook.md)
+- [Operations](../docs/operations.md)

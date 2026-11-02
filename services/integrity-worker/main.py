@@ -40,7 +40,7 @@ def decode(value: str):
         if len(raw) > 12 * 1024 * 1024:
             raise ValueError("too large")
         image = cv2.imdecode(np.frombuffer(raw, np.uint8), cv2.IMREAD_COLOR)
-        if image is None or image.shape[0] * image.shape[1] > 24_000_000:
+        if image is None or image.shape[0] * image.shape[1] > 20_000_000:
             raise ValueError("invalid image")
         return image
     except Exception as error:
@@ -110,4 +110,26 @@ def analyze(body: AnalyzeRequest):
         "faceLandmarkStability": round(face_stability, 4),
         "silhouetteStability": round(silhouette_stability, 4),
         "segmentationConfidence": round(segmentation_confidence, 4),
+    }
+
+
+class PreflightRequest(BaseModel):
+    source: str = Field(max_length=28_000_000)
+
+
+@app.post("/v1/preflight", dependencies=[Depends(authorize)])
+def preflight(body: PreflightRequest):
+    image = decode(body.source)
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    with mp.solutions.face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5) as detector:
+        faces = detector.process(rgb).detections or []
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return {
+        "faceCount": len(faces),
+        "personFraction": round(float(np.mean(person_mask(image) >= 0.5)), 4),
+        "sharpness": round(float(cv2.Laplacian(gray, cv2.CV_64F).var()), 2),
+        "brightness": round(float(gray.mean()), 2),
+        "width": int(image.shape[1]),
+        "height": int(image.shape[0]),
+        "limitation": "Automated screening is not proof that an image contains no person or private information. Human review is required.",
     }

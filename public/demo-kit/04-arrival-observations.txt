@@ -1,0 +1,6 @@
+SIMULATED ARRIVAL CHECK — no real purchase occurred:
+Ordered: Everyday utility jacket, Rust / M.
+Delivered label: Indigo / L.
+The sample delivery label says Indigo / L, while the saved order is Rust / M. Please clarify whether the correct item was sent.
+
+Use 02-indigo-overshirt.png as the delivered-item demo image and 05-delivery-label.png as the private delivery-label attachment. The photograph alone does not prove its size or a defect.

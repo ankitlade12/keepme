@@ -1,422 +1,337 @@
-# KeepMe — Change the Clothes, Not the Person
+# AsShown + KeepMe — Shop with Evidence. Preview with Confidence.
 
-[![Node.js 22+](https://img.shields.io/badge/Node.js-22+-339933.svg?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16-000000.svg?logo=next.js&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![CI](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml/badge.svg)](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml)
-[![Vercel](https://img.shields.io/badge/Vercel-live%20demo-000000.svg?logo=vercel&logoColor=white)](https://keepme-olive.vercel.app)
+**Next.js · React · TypeScript · YouCam Clothes v3 · OpenAI · PostgreSQL · Clerk · Vercel**
 
-> **A virtual try-on should change the garment—not the shopper.**
+[Product preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) · [CI](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml) · [Architecture](docs/architecture.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
 
-KeepMe is a consent and visual-integrity layer for AI apparel try-on. A shopper defines what may change, KeepMe measures what actually changed, and protected-region drift is surfaced before the result can be approved.
+> **Choose for your everyday needs. Preview the look. Keep what makes you, you.**
 
-The product can restore supported source regions, reverify the repaired result, issue a signed Integrity Receipt, and confirm deletion of the sensitive session artifacts it created.
+AsShown connects clothing discovery with the questions a product photo cannot answer. Shoppers confirm a garment’s exact variant, describe their practical requirements, inspect supporting evidence, and decide what still needs a seller’s answer. An optional YouCam preview explores the look while a separate Identity Contract records which personal features should stay unchanged.
 
-KeepMe is not identity verification, face recognition, medical analysis, or a guarantee of garment fit. It answers a narrower question: **did the virtual try-on alter anything outside the shopper-approved garment area?**
+The journey continues after delivery: compare the item with its listing, preserve private evidence, and contribute moderated product notes that can help the next shopper.
 
-**Demo data:** entirely synthetic<br>
-**Default demo:** deterministic and credential-free<br>
-**Hosted product:** [keepme-olive.vercel.app](https://keepme-olive.vercel.app) — guided synthetic demo plus fail-closed live YouCam mode
+**Built for:** the YouCam API Skin AI & eCommerce Hackathon
+
+**Proposed first users:** online clothing shoppers with practical care, fastening, sleeve, or pocket requirements
+
+**Demo mode:** fictional listings and a synthetic shopper; clearly disclosed controlled repair, with separately consented live AI features
+
+## AsShown and KeepMe
+
+This repository contains one integrated application with two complementary parts. **AsShown** is the shopping experience; **KeepMe** is the appearance-preservation foundation used in its YouCam studio. Both are included on `main`.
+
+| | AsShown — Love the look. Know the details. | KeepMe — Change the clothes, not the person. |
+| --- | --- | --- |
+| Focus | Does this item meet my everyday requirements? | Did the preview change a protected appearance detail? |
+| Main experience | Listing, exact variant, requirements, source evidence, and shortlist | Photos, Identity Contract, preserve map, generation, and appearance review |
+| Follow-through | Seller replies, saved decisions, arrival checks, and moderated community notes | Eligible source-zone repair, reverification, signed receipt, and session deletion |
+| Where to start | `/check` | `/studio` |
+
+### KeepMe: the preview foundation
+
+Before a try-on, the shopper approves the garment edit and selects the appearance regions to protect. KeepMe records that Identity Contract, supports custom preserve zones, and surfaces appearance findings for review. Eligible source-zone repairs retain the original result alongside the repaired version. The shopper can download a signed review receipt and delete the session images.
+
+The inherited `/dashboard` provides authorized retailer access to tenant-scoped operational aggregates. The session API and receipt verification remain available under `/api/v1`.
+
+KeepMe checks appearance changes; it is not identity verification or a guarantee of fit. The controlled demo uses disclosed synthetic fixtures. Live analysis depends on configured services and provider quota, and its accuracy still requires broader evaluation.
+
+### AsShown: the shopping and community expansion
+
+AsShown adds the practical context around the preview: what the shopper needs, what the exact listing states, what remains unknown, and what arrives after purchase. Seller replies and community reports retain their source identity instead of becoming unqualified facts. A preview cannot establish care instructions or pocket function.
+
+Together, the two parts connect **product evidence → shopping decision → appearance review → arrival observations** without confusing visual appeal with functional suitability.
 
 ## Quick Highlights
 
-- **Identity Contract** — a versioned, generation-scoped record of the allowed edit and protected regions
-- **Preserve Map** — shopper-drawn zones for glasses, hair, assistive objects, or any detail that must remain unchanged
-- **Measured Integrity Evidence** — garment fidelity, outside-region stability, face geometry, skin consistency, silhouette, and preserve-zone checks
-- **Hard Failure Rules** — critical protected-region drift cannot be hidden by a high average score
-- **Repair and Reverification** — supported source zones can be restored and checked again under the same contract
-- **Signed Integrity Receipt** — downloadable JWS evidence binds the approved contract to result digests and the final decision
-- **Verified Deletion** — source, garment, generated, repaired, mask, and derived artifacts are deleted and checked for absence
-- **Retailer-Safe Operations** — tenant isolation, minimum-cohort analytics, provider credit budgets, rate limits, and privacy-filtered telemetry
-- **Fail-Closed Live Mode** — the synthetic demo remains usable, while personal-image processing stays disabled until durable storage, authentication, scanning, signing, cleanup, and vision services are configured
+- **Requirements first** — essential and preferred needs stay attached to each decision.
+- **Evidence you can inspect** — variant-matched quotes distinguish supported statements, conflicts, and unknowns.
+- **Useful seller questions** — resolve missing details without turning an image into proof.
+- **Shortlists and history** — compare three items, reuse profiles, and export versioned decisions.
+- **YouCam preview studio** — consent-based Clothes v3 generation with protected appearance regions.
+- **Review and repair** — retain the original output, restore an eligible source zone, and inspect the new assessment.
+- **Human-reviewed AI assistance** — requirement suggestions, Spanish translation, OCR, and coarse garment observations.
+- **Arrival and community workflows** — compare delivered items and share moderated, correctable product notes.
+- **Private by design** — separate processing consent, owner-authorized evidence, retention controls, and deletion.
 
-## Product Surfaces
+## Live Deployment
 
-| Surface | Route | Purpose |
-|---|---|---|
-| Product story | `/` | Shopper value, trust model, and retailer positioning |
-| Safe try-on studio | `/studio` | Contract, generation, verification, repair, receipt, and deletion journey |
-| Retailer dashboard | `/dashboard` | Authenticated, tenant-scoped quality and usage aggregates |
-| Health check | `/api/health` | Runtime, database, and object-storage readiness without secret disclosure |
-| Session API | `/api/v1/sessions` | Versioned privacy-first orchestration boundary |
-| Receipt verification | `/api/v1/receipts/verify` | Independent signed-receipt verification |
-| Public notices | `/privacy`, `/terms`, `/security` | Product privacy, terms, and security language |
+| Surface        | Location                                                                                  | Access                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Product        | [Current Vercel preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) | Deployment protection; request a current share link from the project owner |
+| Demo assets    | [Demo kit](public/demo-kit/README.md) · [Download ZIP](public/demo-kit.zip)               | Fictional listings, product images, synthetic shopper, and rehearsal guide |
+| Runtime status | [/api/health](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app/api/health) | Same deployment protection as the application                              |
+| Source         | [GitHub repository](https://github.com/ankitlade12/keepme)                                | This repository retains the original KeepMe name                           |
+| Verification   | [Quality workflow](.github/workflows/ci.yml)                                              | Unit, build, guided-flow, and accessibility checks                         |
 
-The hosted guided path is public and uses only the synthetic assets in [`public/demo`](public/demo/). Live mode is exposed only when its private scanner, integrity worker, durable stores, credentials, and production safety checks are available at runtime.
+**Status checked November 2, 2026:** the preview is deployed. The YouCam account had **zero API units**, so fresh live generation remains unavailable until units are replenished. The application checks the balance before reserving a generation. The controlled repair demo and direct OpenAI garment review have completed the hosted workflow.
+
+A configured integration or healthy web server does not establish available provider quota. Temporary preview links are not a permanent judging-access arrangement. The narrated product video is distributed separately; generated recordings are excluded from Git.
+
+## The Problem
+
+A convincing clothing image leaves everyday questions unanswered:
+
+- Can I machine wash this exact colour and size?
+- Are these working pockets or decorative details?
+- Does the fastening suit my requirements?
+- Did a virtual try-on change my glasses or face as well as my jacket?
+- If the delivered item differs, which listing and evidence should I keep?
+
+AsShown explores this gap between appearance and suitability. Its intended community benefit is clearer, reusable shopping evidence; reduced returns, time savings, and real-user outcomes have not yet been established.
+
+## The Solution
+
+| Question                                              | Source of the answer                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| Does the item meet my requirements?                   | Explicit, variant-matched listing statements and reviewed source evidence |
+| What remains uncertain?                               | Missing statements, conflicts, and an editable seller question            |
+| Do I like the look?                                   | An optional YouCam-generated preview                                      |
+| Did the edit preserve my selected appearance regions? | Separate appearance checks against the Identity Contract                  |
+| What arrived, and what can others learn?              | Reviewed delivery evidence and moderated contributor reports              |
+
+A generated image cannot establish washing instructions, fabric composition, pocket function, comfort, or fit. Seller statements remain seller-reported; community observations remain contributor reports.
 
 ## Architecture Overview
 
-### The Integrity Loop
+### The Shopping Journey
 
 ```mermaid
 flowchart LR
-    P[Choose photos] --> C[Approve Identity Contract]
-    C --> G[Generate try-on]
-    G --> V{Verify protected regions}
-    V -->|Clear| A[Approve result]
-    V -->|Finding| R[Restore supported source zone]
-    R --> V
-    A --> S[Signed Integrity Receipt]
-    S --> D[Delete and verify absence]
+    A[Listing and exact variant] --> B[Essential and preferred requirements]
+    B --> C[Inspect evidence and unknowns]
+    C --> D[Ask seller and review reply]
+    D --> E[Shortlist and saved decision]
+    E --> F[Optional YouCam preview]
+    F --> G[Identity Contract and appearance review]
+    G --> H[Repair or approve and save receipt]
+    E --> I[Arrival review]
+    I --> J[Optional moderated product note]
 ```
-
-The garment edit is expected. KeepMe evaluates the protected pixels and structures around it, explains findings in plain language, and leaves the final decision with the shopper.
 
 ### System Architecture
 
 ```mermaid
-graph TB
-    subgraph EXPERIENCE[Product experience]
-        WEB[Next.js shopper studio]
-        RETAIL[Clerk-protected retailer dashboard]
-    end
-
-    subgraph APPLICATION[Application boundary]
-        API[Versioned session API]
-        CONTRACT[Identity Contract policy]
-        QUEUE[Lease-based job queue]
-        RECEIPT[Receipt signer and verifier]
-        CLEANUP[Expiry and deletion verifier]
-    end
-
-    subgraph DATA[Private data plane]
-        PG[(Postgres metadata and jobs)]
-        BLOB[(Private Vercel Blob artifacts)]
-    end
-
-    subgraph VISION[Vision services]
-        YOUCAM[YouCam Clothes and Skin]
-        WORKER[Private MediaPipe and OpenCV worker]
-        SCAN[Authenticated malware scanner]
-    end
-
-    subgraph OPERATIONS[Operations]
-        OTEL[OpenTelemetry]
-        ANALYTICS[Vercel Analytics and Speed Insights]
-        CRON[GitHub Actions and Vercel Cron]
-    end
-
-    WEB --> API
-    RETAIL --> API
-    API --> CONTRACT
-    API --> QUEUE
-    API --> RECEIPT
-    API --> PG
-    API --> BLOB
-    QUEUE --> YOUCAM
-    QUEUE --> WORKER
-    API --> SCAN
-    CLEANUP --> PG
-    CLEANUP --> BLOB
-    CRON --> CLEANUP
-    API --> OTEL
-    WEB --> ANALYTICS
+flowchart TB
+    UI[React shopping workspace and studio] --> API[Next.js server routes]
+    API --> POLICY[Variant-aware evidence policy]
+    API --> AUTH[Session capabilities and Clerk]
+    API --> AI[Direct OpenAI assistance]
+    API --> CAM[YouCam Clothes v3 and eligible Skin Analysis]
+    API --> SCAN[Private ClamAV scanner]
+    API --> VERIFY[MediaPipe and OpenCV integrity worker]
+    API --> DB[(PostgreSQL records and jobs)]
+    API --> BLOB[(Private Vercel Blob)]
+    POLICY --> EXPORT[Decision reports and reviewed evidence]
+    VERIFY --> RECEIPT[Signed appearance receipts]
 ```
 
-### Technology Stack
+### Tech Stack
 
-| Layer | Technology | Responsibility |
-|---|---|---|
-| Web and API | Next.js 16, React 19, strict TypeScript | Product UI, API boundary, security headers, and orchestration |
-| Authentication | Clerk | Retailer sign-in, allowlisting, and stable organization/user tenant ownership |
-| Metadata and jobs | Postgres | Sessions, cleanup leases, usage, rate limits, and privacy-filtered events |
-| Sensitive artifacts | Private Vercel Blob | Opaque paths, server-only access, digest evidence, and deletion verification |
-| Virtual try-on | YouCam AI Clothes v3 | Server-side garment generation with bounded polling and credit guards |
-| Consistency signal | YouCam Skin Analysis v2.1 | Optional source/result skin-signal comparison |
-| Integrity worker | FastAPI, MediaPipe, OpenCV | Face-landmark alignment and person segmentation without recognition |
-| Upload boundary | Sharp and private ClamAV service | Decode, size/pixel limits, metadata removal, re-encoding, and authenticated malware decision |
-| Proof | JOSE, SHA-256, signed JWS | Contract/result binding and receipt verification |
-| Operations | OpenTelemetry and Vercel | Structured events, runtime traces, analytics, and performance visibility |
+| Layer                | Technology                                                        | Purpose                                                                        |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Interface            | Next.js App Router, React, TypeScript                             | Responsive shopping, review, and community workflows                           |
+| Product policy       | TypeScript, Zod                                                   | Bounded requirements, exact variants, provenance, and explicit decision states |
+| Virtual try-on       | YouCam Clothes v3                                                 | Generate the clothing preview after consent                                    |
+| Appearance checks    | Python, FastAPI, MediaPipe, OpenCV; eligible YouCam Skin Analysis | Compare protected regions and expose uncertainty                               |
+| Language and vision  | AI SDK with direct OpenAI provider                                | Reviewed suggestions, translation, OCR, and garment observations               |
+| Identity and storage | Clerk, PostgreSQL, private Vercel Blob                            | Account access, private evidence, moderation, and cleanup                      |
+| Upload safety        | Sharp, private ClamAV service                                     | Image validation, processing copies, and malware scanning                      |
+| Delivery             | Vercel Services, Docker, GitHub Actions                           | Web/API, private workers, builds, and maintenance                              |
 
-## The Problem
-
-Virtual try-on systems are asked to edit clothing, but generated outputs may also change glasses, hair, skin appearance, facial structure, body outline, or personally meaningful details. A visually convincing image can therefore be wrong in a way that is difficult for a shopper or retailer to explain and impossible to audit later.
-
-Three questions are usually left unanswered:
-
-- What exactly did the shopper authorize the model to change?
-- Did the output stay inside that boundary?
-- What evidence remains after the image is approved or deleted?
-
-**A plausible result is not the same as a contract-compliant result.**
-
-## The Solution
-
-KeepMe turns one try-on into a governed, session-scoped record:
-
-1. The shopper chooses a person photo and garment.
-2. An Identity Contract defines the allowed garment edit and protected regions.
-3. The browser records explicit consent for one generation.
-4. YouCam creates the apparel result through a server-only adapter.
-5. KeepMe aligns source and result, measures protected regions, and applies hard failure rules.
-6. Supported findings can be repaired by restoring the selected source zone and reverifying it.
-7. The shopper approves the result and receives a signed Integrity Receipt.
-8. The session artifacts are deleted immediately or by expiry cleanup, and absence is verified before deletion is reported as complete.
-
-The deterministic guided demo uses this same product flow with a disclosed glasses-removal fixture. It does not pretend that an accidental live-provider failure occurred during the demo.
-
-## Integrity Decision Policy
-
-| State | Meaning |
-|---|---|
-| `passed` | No protected check crossed its calibrated threshold |
-| `needs_review` | A non-critical protected signal requires a shopper decision |
-| `failed` | A hard protected-region rule was violated |
-| `inconclusive` | Alignment or input quality is not reliable enough to judge |
-| `passed_after_repair` | A supported source-zone restoration passed reverification |
-
-Hard rules take precedence over the weighted summary. Skin Analysis is a secondary consistency signal: if it is unavailable, confidence is reduced rather than automatically failed.
+See [architecture](docs/architecture.md) for the implementation boundaries.
 
 ## Product Features
 
-### Consent and Identity Contract
+### Practical Requirements and Source Evidence
 
-- Generation-scoped consent with versioned contract data
-- Explicit allowed garment region and individually toggleable protections
-- Custom preserve zones drawn directly on the source image
-- Contract and consent events bound to the private session
+Paste listing text, add up to three JPEG/PNG product photos, and confirm the exact variant. Choose up to five requirements covering care, sleeves, pockets, closures, material, price, or custom needs. Essential requirements cannot be outweighed by preferences.
 
-### Verification and Explanation
+Inspect quoted source spans, add seller replies, and exclude or restore sources with a reason. Variant changes reevaluate current findings while historical reports retain their original inputs. Retailer-link imports, including Amazon scraping, are intentionally removed; intake uses pasted details and uploaded photos.
 
-- Source/result alignment reliability checks
-- Garment no-op detection and outside-region comparison
-- Face-landmark displacement without identity recognition
-- Skin and silhouette consistency signals
-- Preserve-zone hard rules, component scores, reason codes, and highlighted findings
-- Explicit `inconclusive` outcomes when evidence quality is insufficient
+### Shortlists, Profiles, and Saved Decisions
 
-### Repair, Proof, and Deletion
+Compare up to three items, choose a next action, save requirement profiles, and export readable or JSON decision snapshots. Guests have a short restore window; configured account storage supports explicit workspace saves across devices. Product photos held in browser memory do not survive refresh.
 
-- Feathered source-zone restoration for supported findings
-- Reverification after repair under the same contract
-- Signed JSON receipt with contract and result digests
-- Public receipt-verification endpoint
-- Immediate deletion, expiry cleanup, bounded retries, and absence verification
+### YouCam Preview and Identity Protection
 
-### Retailer and Operational Controls
+Approve the allowed garment edit and protection choices before provider uploads. The studio supports face geometry, skin appearance, hair, background, glasses, and custom preserve zones. Live results are assessed separately from the shopping evidence.
 
-- Clerk-protected retailer access with exact email allowlisting
-- Organization/user tenant isolation and no individual shopper-image view
-- Minimum cohort suppression for aggregate analytics
-- Per-IP, per-session, and per-tenant provider limits
-- Structured operational events that exclude image data, URLs, filenames, and identity attributes
+Unknown submissions remain reserved to prevent duplicate paid tasks. Known jobs can resume status checks. Empty provider balances stop before reservation. Eligible repairs preserve both the original output and the repaired result. Approval produces a signed receipt; its signature attests to the recorded data, not the truth of a product claim.
 
-## Recommended 90-Second Demo
+### Accessible, Human-Reviewed Assistance
 
-The default **Identity drift demo** is synthetic, deterministic, and safe to repeat.
+Describe needs naturally, use browser dictation, request structured requirement suggestions or Spanish translation, and hear summaries read aloud. Direct OpenAI OCR and visual assistance require separate consent. Suggestions remain editable and cannot satisfy product requirements automatically.
 
-1. Open `/studio` and keep **Identity drift demo** selected.
-2. Select **Protect the glasses** and review the pre-drawn preserve zone.
-3. Approve the disclosed synthetic scenario and run the try-on.
-4. Show the missing glasses, highlighted region, hard failure, and reason codes.
-5. Select **Restore source zone & reverify** and inspect the repaired result.
-6. Approve the result, download the signed receipt, and delete the session.
+Garment review compares visible neckline, sleeves, and fastening details. Full-size image links support manual inspection; unreliable model-generated coordinate overlays are not shown. Exporting reviewed observations requires an explicit human acknowledgment, which resets when the inputs or notes change.
 
-Run the same contract-to-deletion path without a browser:
+### Arrival Review and Private Evidence
 
-```bash
-npm run smoke:guided
-```
+Record ordered and delivered colour/size, compare delivery photos with the original listing, and prepare a reviewed seller-message package. Selected original images can be included in a self-contained HTML export printable to PDF.
+
+Signed-in shoppers can save private originals up to 10 MB, renew their 30-day retention, or delete them. Uploads pass quarantine and scanning before owner-authorized evidence access. Processing copies remain distinct from originals.
+
+### Community Notes, Moderation, and Support
+
+Contribute item-specific text and optional product-only photos with publication consent. Photo redaction and screening support an explicit moderator review. Reports move through pending, published, disputed, corrected, withdrawn, and removed states; disputed or withdrawn sources stop supporting current findings.
+
+Accountable moderators review contributions, resolve support tickets, and can pause new paid processing with an audited reason. Reputation is not treated as a truth score. Community publication requires configured moderators and an enabled launch gate.
+
+## Judge Quick Start
+
+Use a current preview share link or run locally. The [demo kit](public/demo-kit/README.md) contains all fictional listing text and images.
+
+1. **Check an item:** choose **Explore example**, or paste the rust-jacket listing and upload its photo.
+2. **Set requirements:** keep machine washing and functional pockets essential; review sleeve preferences.
+3. **Follow the evidence:** inspect the quoted washing instruction and the unknown pocket function. Add the kit’s simulated seller reply and observe the updated findings.
+4. **Keep the decision:** shortlist the item and inspect profiles, history, or exports.
+5. **Open the studio:** select **Identity drift demo**, protect the glasses, and approve the explicitly controlled scenario.
+6. **Review and repair:** inspect the missing-glasses finding, then choose **Restore source zone & reverify**.
+7. **Review garment details:** optionally consent to OpenAI assistance, inspect both images, add corrections, and acknowledge review before export.
+8. **Finish:** approve the result, download the signed receipt, and choose **Delete images now**. Explore **Arrival check**, **Product notes**, and **Privacy & data** separately.
+
+The controlled scenario deliberately demonstrates an appearance change and repair. It uses synthetic fixtures and makes no live YouCam generation request. Live mode requires available API units and the configured image services; use the actual returned result rather than assume a pass.
 
 ## Local Installation
 
-Requirements: Node.js 22+ and npm.
+Requirements: Node.js 22 and npm. The optional Python services use their supplied Dockerfiles.
 
-```bash
+```sh
 git clone https://github.com/ankitlade12/keepme.git
 cd keepme
+git checkout main
 npm ci
 cp .env.example .env.local
-npm run dev
+npm run dev -- --hostname localhost --port 3001
 ```
 
-Open <http://localhost:3000>. The guided demo needs no provider credentials.
-
-### Live YouCam Mode
-
-For local development, set the server-only `YOUCAM_API_KEY`, restart the app, and select **Live virtual try-on** in `/studio`. A fail-closed production deployment also needs the scanner and integrity worker tokens and URLs described in [Configuration](#configuration). Live generation consumes provider units. The browser never receives the API key or upstream result URL.
-
-The current adapter uses:
-
-- AI Clothes v3: `/s2s/v2.0/file/cloth-v3` and `/s2s/v2.0/task/cloth-v3`
-- Skin Analysis v2.1: `/s2s/v2.1/file/skin-analysis` and `/s2s/v2.1/task/skin-analysis`
-
-Keep credentials in `.env.local` or the deployment platform’s encrypted secret store; never commit them.
-
-## Reproducible Verification
-
-```bash
-npm run lint              # ESLint and Next.js rules
-npm test                  # integrity, receipt, upload, security, and UI tests
-npm run build             # optimized production compilation
-npm run smoke:guided      # synthetic contract-to-deletion API flow
-npm run audit:a11y        # browser rendering, error, overflow, and WCAG A/AA audit
-npm run check:production  # fail-closed dependency and secret gate
-```
-
-Current local result:
-
-```text
-Tests  25 passed
-Lint   passed
-Build  passed
-Flow   guided contract → finding → repair → receipt → deletion passed
-```
-
-GitHub Actions also runs a production dependency audit, lint, tests, build, guided smoke flow, and browser rendering/accessibility audit on pull requests and `main`.
-
-## Commands
-
-| Command | Purpose |
-|---|---|
-| `npm run dev` | Start the Next.js development server |
-| `npm run build` | Create the optimized production build |
-| `npm start` | Serve a completed production build |
-| `npm run lint` | Run ESLint and Next.js rules |
-| `npm test` | Run the Vitest suite once |
-| `npm run test:watch` | Run Vitest in watch mode |
-| `npm run smoke:guided` | Verify the deterministic guided flow |
-| `npm run smoke:live` | Verify a configured live-provider flow |
-| `npm run audit:a11y` | Check public routes and the live garment catalog for broken images, browser errors, overflow, and automated WCAG A/AA violations |
-| `npm run check:production` | Confirm required services/secrets and disable ephemeral fallbacks |
-| `npm run db:migrate` | Apply the initial Postgres migration |
-| `npm run calibrate -- <dataset.jsonl>` | Generate a threshold profile from governed evaluation data |
-
-## Project Structure
-
-```text
-keepme/
-├── app/                         # App Router pages, notices, and API routes
-├── components/                  # Product UI and Preserve Map interaction
-├── lib/                         # Contracts, integrity, storage, auth, receipts, and providers
-├── services/integrity-worker/   # Private FastAPI + MediaPipe/OpenCV service
-├── services/malware-scanner/    # Private authenticated ClamAV service
-├── db/migrations/               # Durable Postgres schema
-├── scripts/                     # Smoke, readiness, migration, accessibility, and calibration tools
-├── public/demo/                 # Synthetic controlled fixtures only
-├── calibration/                 # Calibration protocol and dataset contract
-├── docs/                        # Architecture, privacy, security, runbook, and traceability
-├── .github/workflows/ci.yml     # Repository verification pipeline
-├── Dockerfile                   # Standalone Next.js container
-├── vercel.json                  # Vercel Services, function limits, rewrites, and cleanup cron
-└── .env.example                 # Configuration contract without secrets
-```
+Open http://localhost:3001. Product-text checks and the controlled studio demonstration do not require provider credentials. Use `localhost` with Clerk enabled. The development-only file/in-memory adapters are not deployment storage.
 
 ## Configuration
 
-Copy [`.env.example`](.env.example) to `.env.local`. The major groups are:
+Configure only the capabilities you intend to use. Keep credential values in local ignored environment files or host secrets.
 
-| Group | Variables |
-|---|---|
-| Runtime | `KEEPME_DEMO_MODE`, `SESSION_TTL_MINUTES`, `NEXT_PUBLIC_SITE_URL` |
-| YouCam | `YOUCAM_API_KEY`, `YOUCAM_API_BASE_URL` |
-| Durable data | `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`, `KEEPME_AUTO_MIGRATE` |
-| Authentication | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `RETAILER_EMAIL_ALLOWLIST` |
-| Proof and cleanup | `RECEIPT_SIGNING_SECRET`, `CRON_SECRET` |
-| Upload security | `MALWARE_SCAN_URL`, `MALWARE_SCAN_TOKEN` |
-| Integrity worker | `INTEGRITY_WORKER_URL` or Vercel-injected `INTEGRITY_URL`, plus `INTEGRITY_WORKER_TOKEN` |
-| Cost controls | `MAX_PROVIDER_TASKS_PER_SESSION`, `MAX_PROVIDER_TASKS_PER_HOUR` |
+| Variable                                                             | Purpose                                                          |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `YOUCAM_API_KEY`                                                     | Server-side YouCam access; available API units are also required |
+| `YOUCAM_API_BASE_URL`                                                | Defaults to the configured YouCam API host                       |
+| `OPENAI_API_KEY`                                                     | Direct OpenAI access; no Vercel AI Gateway is used               |
+| `ASSHOWN_AI_MODEL` / `ASSHOWN_VISION_MODEL`                          | Explicit model selection, such as `gpt-4.1-mini`                 |
+| `DATABASE_URL`                                                       | PostgreSQL metadata, durable requests, and account records       |
+| `BLOB_READ_WRITE_TOKEN`                                              | Private artifact and evidence storage                            |
+| Clerk publishable/server keys                                        | Sign-in and account ownership                                    |
+| `RECEIPT_SIGNING_SECRET` / `CRON_SECRET`                             | Receipt signatures and authenticated maintenance                 |
+| `MALWARE_SCAN_URL` / `MALWARE_SCAN_TOKEN`                            | Authenticated private upload scanner                             |
+| `INTEGRITY_WORKER_URL` or `INTEGRITY_URL` / `INTEGRITY_WORKER_TOKEN` | Private appearance-analysis worker                               |
+| `SESSION_TTL_MINUTES`                                                | Temporary studio session lifetime; default 30 minutes            |
+| `MAX_PROVIDER_TASKS_PER_SESSION`                                     | At most two paid tasks per session                               |
+| `MAX_PROVIDER_TASKS_PER_HOUR` / `MAX_PROVIDER_TASKS_PER_DAY`         | Provider request budgets                                         |
+| `MAX_ACCOUNT_GENERATIONS_PER_DAY`                                    | Additional daily generation limit                                |
+| `ASSHOWN_COMMUNITY_ENABLED`                                          | Community publication gate                                       |
+| `ASSHOWN_MODERATOR_IDS` / `ASSHOWN_MODERATOR_EMAILS`                 | Authorized moderators; emails must be verified                   |
+| `ASSHOWN_PAID_FEATURES_ENABLED`                                      | Stops new paid processing when false                             |
+| `RETAILER_EMAIL_ALLOWLIST`                                           | Access to the inherited retailer dashboard                       |
 
-Local development may use ephemeral adapters. Public production must set `KEEPME_ALLOW_EPHEMERAL=false`; the readiness check then requires every durable dependency. Missing live-image services do not take down the synthetic demo, but live uploads fail closed with a JSON `503` response.
+See [.env.example](.env.example) and [operations](docs/operations.md) for deployment configuration.
+
+## Verification
+
+```sh
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+
+# Install Chromium once; run with the dev server on port 3001.
+npx playwright install chromium
+node scripts/asshown-full-browser-qa.mjs
+node scripts/asshown-demo-kit-smoke.mjs
+KEEPME_URL=http://localhost:3001 npm run smoke:guided
+```
+
+Verified November 2, 2026: **87 application tests passed**, TypeScript passed, and the preview production build succeeded. Seven shopping-workspace scenarios and the hosted listing-to-repair-to-receipt journey passed. The latter included a real OpenAI review, human-confirmed export, mobile layout, and deleted-image access checks. Lint has warnings but no errors.
+
+A fresh live YouCam attempt was rejected while the account had zero units. The subsequent empty-balance check returned HTTP 402 with **zero reserved provider tasks**. Earlier live successes do not establish present availability or evaluated accuracy.
+
+Opt-in provider checks spend requests and use synthetic assets:
+
+```sh
+# Real YouCam generation; requires configured services and provider quota.
+KEEPME_URL=https://your-preview.example node --env-file=.env.local scripts/live-flow-smoke.mjs
+
+# Complete browser journey; LIVE_REVIEW=1 enables a real OpenAI review.
+ASSHOWN_URL=http://localhost:3001 LIVE_REVIEW=1 node scripts/studio-review-e2e.mjs
+```
+
+Generated reports, recordings, local credentials, and account data remain ignored. Automated browser checks are not human accessibility certification or a held-out model evaluation.
+
+## Repository Structure
+
+```text
+keepme/
+├── app/                         # Product pages, styles, and server routes
+├── components/                  # Shopping workspace, studio, and review UI
+├── lib/asshown/                  # Requirements, evidence, accounts, and community
+├── lib/                         # Sessions, YouCam, integrity, receipts, and storage
+├── services/
+│   ├── integrity-worker/        # FastAPI, MediaPipe, and OpenCV
+│   └── malware-scanner/         # Private ClamAV upload boundary
+├── db/migrations/               # Durable session and job schema
+├── public/demo/                 # Disclosed synthetic studio assets
+├── public/demo-kit/             # Product-demo inputs and walkthrough
+├── calibration/                 # Evaluation protocol and threshold tooling
+├── scripts/                     # Smoke, browser, and operational checks
+├── docs/                        # Architecture, privacy, and operations
+├── .github/workflows/           # Quality and maintenance automation
+├── Dockerfile
+├── vercel.json
+└── .env.example
+```
+
+## Deployment
+
+[vercel.json](vercel.json) defines the Next.js web app, private integrity worker, and private scanner. The root [Dockerfile](Dockerfile) provides a standalone web image for other hosting environments; it does not provision those dependencies.
+
+1. Provision an isolated PostgreSQL database, private Blob store, and appropriate Clerk environment.
+2. Apply session migrations with `npm run db:migrate`; provision the AsShown records table using the initialization described in [operations](docs/operations.md).
+3. Configure server secrets and private service bindings. Keep `KEEPME_ALLOW_EPHEMERAL=false` and `KEEPME_AUTO_MIGRATE=false` for deployed operation.
+4. Deploy a preview, verify the controlled journey and cleanup, then explicitly verify live provider availability.
+5. Configure monitored maintenance and a stable judge-access arrangement before submission or public rollout.
+
+Provider calls, hosting, and storage can incur costs. The current preview is not an approved production launch.
 
 ## API Surface
 
-```text
-GET     /api/health
-POST    /api/v1/sessions
-GET     /api/v1/sessions/:id
-DELETE  /api/v1/sessions/:id
-PUT     /api/v1/sessions/:id/identity-contract
-POST    /api/v1/sessions/:id/uploads
-POST    /api/v1/sessions/:id/generate
-GET     /api/v1/sessions/:id/generation-status
-POST    /api/v1/sessions/:id/verify
-POST    /api/v1/sessions/:id/repair
-POST    /api/v1/sessions/:id/approve
-GET     /api/v1/sessions/:id/result-image
-GET     /api/v1/sessions/:id/receipt-download
-POST    /api/v1/receipts/verify
-GET     /api/v1/retailer/export
-POST    /api/internal/maintenance
-```
+| Route                                               | Purpose                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `/api/asshown/workspace`                            | Guest/account state and explicit saved workspaces                |
+| `/api/asshown/assist`, `/extract`, `/vision`        | Consented language, OCR, and visual suggestions                  |
+| `/api/asshown/assets` and upload routes             | Owner-authorized private evidence                                |
+| `/api/asshown/community` and community-media routes | Contributions, moderation, and publication lifecycle             |
+| `/api/asshown/support`, `/operations`               | Support and audited processing controls                          |
+| `/api/v1/sessions`                                  | Private preview session lifecycle                                |
+| `/api/v1/sessions/[id]/[action]`                    | Contract, generation, status, verification, repair, and approval |
+| `/api/v1/receipts/verify`                           | Signed receipt verification                                      |
+| `/api/internal/maintenance`                         | Authenticated expiry and deletion work                           |
+| `/api/health`                                       | Runtime dependency status; not a provider-quota guarantee        |
 
-Mutation routes enforce same-origin requests. Sensitive session responses use `no-store`, and unauthorized or unknown session access returns the same 404 shape.
+The retired retailer import endpoint returns HTTP 410 and makes no outbound product requests.
 
-## Deploying
+## Privacy and Decision Boundaries
 
-The repository supports two deployment shapes:
+Guest restore lasts 30 minutes and excludes uploaded photos after refresh. Account evidence has separate retention and renewal. Application deletion and downstream provider retention are separate obligations. Publication, storage, and model processing have separate consent gates.
 
-- **Vercel Services:** `vercel.json` deploys the Next.js web service and privately binds the integrity and malware-scanner services.
-- **Standalone container:** the root `Dockerfile` produces a non-root Next.js standalone image; deploy both supporting services separately and set `INTEGRITY_WORKER_URL` and `MALWARE_SCAN_URL`.
+Neither an appearance score nor a signed receipt establishes fit, comfort, fabric properties, pocket function, medical suitability, or seller honesty. Unknown and conflicting evidence stays visible. See [privacy and provenance](docs/privacy.md).
 
-Before public deployment:
+## Project History and Next Steps
 
-1. Provision every variable required by `npm run check:production`.
-2. Set `KEEPME_ALLOW_EPHEMERAL=false`.
-3. Apply `npm run db:migrate` with a migration-only database role.
-4. Verify private storage, scanner, Clerk, YouCam, receipt signing, cleanup authorization, and integrity-worker connectivity.
-5. Run the complete CI and operational drills in the [production runbook](docs/production-runbook.md).
+AsShown builds on the MIT-licensed KeepMe baseline, commit [`2c4053d`](https://github.com/ankitlade12/keepme/tree/2c4053db1c5b3144be29340f57a5419824db4b96). The original project is preserved in Git history, and its studio foundation continues in the current application. The AsShown expansion is merged into `main`; a separate feature-branch checkout is no longer required.
 
-## Safety and Privacy Boundaries
+The hackathon expansion adds variant-aware shopping evidence, requirements, seller replies, shortlists, account workspaces, profiles, community moderation, arrival review, language assistance, support, and the responsive AsShown interface. It also strengthens consent, duplicate-task prevention, repair lineage, and deletion behavior.
 
-- All committed images and guided fixtures are synthetic.
-- Images and derived artifacts are session-only and excluded from product analytics.
-- Consent is explicit and scoped to one generation.
-- Retailers never receive individual shopper images.
-- KeepMe does not retain source filenames, create persistent face embeddings, infer demographics, or train on session images.
-- Uploads are decoded from bytes, limited to JPEG/PNG, bounded to 10 MB and 24 MP, stripped of metadata, and safely re-encoded.
-- Production scanning fails closed when the authenticated malware scanner is unavailable.
-- CSP, HSTS, frame denial, MIME protections, restrictive permissions, rate limits, tenant checks, and private object storage are enforced centrally.
-- Deletion is not reported as complete until configured storage confirms artifact absence.
+Before a public launch, complete owned/licensed case evaluation, independent human review, user interviews, manual accessibility work, moderator staffing, provider-retention review, and backup/cleanup incident drills. No evaluated accuracy, reduced-return benefit, or commercial outcome is claimed. Subscription billing is not implemented.
 
-See [privacy and data handling](docs/privacy.md) and the [security review](docs/security-review.md) for the detailed boundary.
+## License
 
-## Why KeepMe Is Different
+[MIT](LICENSE) © 2026 Ankit Lade.
 
-| Capability | Conventional virtual try-on | KeepMe |
-|---|:---:|:---:|
-| Records what the shopper allowed to change | Rarely | Yes |
-| Supports shopper-defined preserve zones | Rarely | Yes |
-| Measures protected regions before approval | Partial | Yes |
-| Uses hard rules for critical drift | Rarely | Yes |
-| Distinguishes failure from inconclusive evidence | Rarely | Yes |
-| Repairs a supported source zone and reverifies | Rarely | Yes |
-| Produces a signed, independently verifiable receipt | No | Yes |
-| Deletes session artifacts and verifies absence | Partial | Yes |
-| Hides individual images from retailer analytics | Varies | Yes |
-
-The novelty is the combination: **shopper-owned boundaries + measured evidence + repair + proof + verified deletion.**
-
-## Production Boundary
-
-KeepMe is a working end-to-end beta foundation with a deterministic synthetic path and a fail-closed live YouCam integration. The hosted environment enables live mode only while its required private services and credentials are present; that technical gate is not a substitute for operator, legal, security, accessibility, or calibration approval.
-
-Before accepting public personal images, operators must provide production credentials and quota, managed durable services, reviewed legal notices, incident and deletion procedures, vendor agreements, a governed calibration dataset, and independent accessibility and security review. The application intentionally fails closed when those controls are required but missing.
-
-## Future Enhancements
-
-- Governed calibration on independently labeled, consented evaluation data
-- Occlusion-aware repair safety gates and accessible patterned heatmaps
-- Public-key receipt provenance for cross-organization verification
-- Webhook-based provider completion where supported
-- Independent assistive-technology, penetration, and tenant-isolation testing
-- Retailer pilots with reviewed cohort definitions and deletion/restore drills
-
-## Documentation
-
-- [Architecture and integrity policy](docs/architecture.md)
-- [Privacy and data lifecycle](docs/privacy.md)
-- [Security review](docs/security-review.md)
-- [Production runbook](docs/production-runbook.md)
-- [Requirements traceability](docs/requirements-traceability.md)
-- [Calibration protocol](calibration/README.md)
-
-## Limitations
-
-The controlled violation is intentionally altered and labeled throughout the interface. It demonstrates KeepMe behavior and is not represented as a fresh YouCam failure.
-
-KeepMe measures visual consistency. It does not verify identity, infer sensitive traits, diagnose skin conditions, certify universal fairness, or guarantee physical garment fit. Thresholds must be calibrated on governed evaluation data before real-world approval decisions are automated.
-
----
-
-**Change the clothes. Keep the person. Prove the boundary held.**
+_Check the evidence. Preview the look. Keep your choice._

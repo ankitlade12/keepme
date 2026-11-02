@@ -29,3 +29,10 @@ public/demo/controlled-glasses-violation-v4.png
 # Local agent provisioning metadata
 .agents/
 skills-lock.json
+
+.asshown-data/
+artifacts/
+
+# Python service bytecode
+__pycache__/
+*.pyc

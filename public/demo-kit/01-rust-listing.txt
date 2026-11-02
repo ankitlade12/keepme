@@ -1,0 +1,9 @@
+Item name: Everyday utility jacket
+Brand: Illustrative catalog
+Retailer: Demo listing — not for sale
+SKU: DEMO-RUST-M
+Color: Rust
+Size: M
+
+PASTE ONLY THE FOLLOWING INTO LISTING TEXT:
+Illustrative demo listing: Everyday utility jacket, Rust, size M. Long sleeves. 100% cotton. Machine wash cold. Button closure. Two patch pockets are shown; their function is not stated. Price: $68.00 USD. Shipping and tax are not supplied. This is a fictional test item, not an Amazon listing.

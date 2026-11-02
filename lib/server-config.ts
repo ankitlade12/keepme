@@ -21,11 +21,11 @@ const schema = z.object({
   KEEPME_ALLOW_EPHEMERAL: booleanValue.default(true),
   KEEPME_AUTO_MIGRATE: booleanValue.default(false),
   SESSION_TTL_MINUTES: z.coerce.number().int().min(5).max(120).default(30),
-  MAX_PROVIDER_TASKS_PER_SESSION: z.coerce.number().int().min(1).max(10).default(3),
+  MAX_PROVIDER_TASKS_PER_SESSION: z.coerce.number().int().min(1).max(2).default(2),
   MAX_PROVIDER_TASKS_PER_HOUR: z.coerce.number().int().min(1).default(100),
 });
 
-export const serverConfig = schema.parse(process.env);
+export const serverConfig = schema.parse(Object.fromEntries(Object.entries(process.env).filter(([, value]) => value?.trim())));
 
 export function retailerAllowlist() {
   return new Set(serverConfig.RETAILER_EMAIL_ALLOWLIST.split(",").map((value) => value.trim().toLowerCase()).filter(Boolean));
