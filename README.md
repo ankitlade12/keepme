@@ -1,4 +1,4 @@
-# AsShown — Love the Look. Know the Details.
+# AsShown + KeepMe — Shop with Evidence. Preview with Confidence.
 
 **Next.js · React · TypeScript · YouCam Clothes v3 · OpenAI · PostgreSQL · Clerk · Vercel**
 
@@ -15,6 +15,31 @@ The journey continues after delivery: compare the item with its listing, preserv
 **Proposed first users:** online clothing shoppers with practical care, fastening, sleeve, or pocket requirements
 
 **Demo mode:** fictional listings and a synthetic shopper; clearly disclosed controlled repair, with separately consented live AI features
+
+## AsShown and KeepMe
+
+This repository contains one integrated application with two complementary parts. **AsShown** is the shopping experience; **KeepMe** is the appearance-preservation foundation used in its YouCam studio. Both are included on `main`.
+
+| | AsShown — Love the look. Know the details. | KeepMe — Change the clothes, not the person. |
+| --- | --- | --- |
+| Focus | Does this item meet my everyday requirements? | Did the preview change a protected appearance detail? |
+| Main experience | Listing, exact variant, requirements, source evidence, and shortlist | Photos, Identity Contract, preserve map, generation, and appearance review |
+| Follow-through | Seller replies, saved decisions, arrival checks, and moderated community notes | Eligible source-zone repair, reverification, signed receipt, and session deletion |
+| Where to start | `/check` | `/studio` |
+
+### KeepMe: the preview foundation
+
+Before a try-on, the shopper approves the garment edit and selects the appearance regions to protect. KeepMe records that Identity Contract, supports custom preserve zones, and surfaces appearance findings for review. Eligible source-zone repairs retain the original result alongside the repaired version. The shopper can download a signed review receipt and delete the session images.
+
+The inherited `/dashboard` provides authorized retailer access to tenant-scoped operational aggregates. The session API and receipt verification remain available under `/api/v1`.
+
+KeepMe checks appearance changes; it is not identity verification or a guarantee of fit. The controlled demo uses disclosed synthetic fixtures. Live analysis depends on configured services and provider quota, and its accuracy still requires broader evaluation.
+
+### AsShown: the shopping and community expansion
+
+AsShown adds the practical context around the preview: what the shopper needs, what the exact listing states, what remains unknown, and what arrives after purchase. Seller replies and community reports retain their source identity instead of becoming unqualified facts. A preview cannot establish care instructions or pocket function.
+
+Together, the two parts connect **product evidence → shopping decision → appearance review → arrival observations** without confusing visual appeal with functional suitability.
 
 ## Quick Highlights
 
@@ -173,7 +198,7 @@ Requirements: Node.js 22 and npm. The optional Python services use their supplie
 ```sh
 git clone https://github.com/ankitlade12/keepme.git
 cd keepme
-git checkout feat/asshown-community-mvp
+git checkout main
 npm ci
 cp .env.example .env.local
 npm run dev -- --hostname localhost --port 3001
@@ -297,9 +322,9 @@ Guest restore lasts 30 minutes and excludes uploaded photos after refresh. Accou
 
 Neither an appearance score nor a signed receipt establishes fit, comfort, fabric properties, pocket function, medical suitability, or seller honesty. Unknown and conflicting evidence stays visible. See [privacy and provenance](docs/privacy.md).
 
-## Project Origins and Next Steps
+## Project History and Next Steps
 
-AsShown builds on the MIT-licensed KeepMe baseline, commit [`2c4053d`](https://github.com/ankitlade12/keepme/tree/2c4053db1c5b3144be29340f57a5419824db4b96). The original project is preserved in Git history.
+AsShown builds on the MIT-licensed KeepMe baseline, commit [`2c4053d`](https://github.com/ankitlade12/keepme/tree/2c4053db1c5b3144be29340f57a5419824db4b96). The original project is preserved in Git history, and its studio foundation continues in the current application. The AsShown expansion is merged into `main`; a separate feature-branch checkout is no longer required.
 
 The hackathon expansion adds variant-aware shopping evidence, requirements, seller replies, shortlists, account workspaces, profiles, community moderation, arrival review, language assistance, support, and the responsive AsShown interface. It also strengthens consent, duplicate-task prevention, repair lineage, and deletion behavior.
 
