@@ -73,10 +73,8 @@ export function VisualReviewPanel({
           : "Review garment details separately"}
       </h2>
       <p className="as-muted">
-        Compare the original product photograph with{" "}
-        {kind === "arrival" ? "the delivered item" : "the preview"}. AI
-        suggestions are unvalidated and require your review. Appearance
-        integrity does not establish garment suitability.
+        AI suggestions need your review; they do not establish fit or
+        suitability.
       </p>
       <div className="as-form-grid">
         <div>

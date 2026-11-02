@@ -2,6 +2,14 @@
 
 Scope: all 39 M/B/G functional requirements. A passing workflow is not a validated model accuracy claim or a production release approval. This report supersedes historical verification counts in STATUS.md.
 
+## App copy cleanup and demo kit — 2026-11-01
+
+Removed or shortened more than 40 helper blocks across the shopping workspace, studio, account storage, community, support, OCR, evidence export and footer. Removed the extra advice card and repeated page introductions. Kept field labels, error/status messages, explicit processing/publication consent, source provenance and concise decision limitations.
+
+`public/demo-kit/index.html` provides a gallery and copyable descriptions; `public/demo-kit.zip` contains 16 files including seven images, both product descriptions, seller replies, arrival observations, source HTML cards and the full README walkthrough. Products and document screenshots are explicitly fictional; the shopper is synthetic. The recorded preview is labeled as an older reference, not a new result. All images fit upload limits, and the ZIP passed integrity checks.
+
+81 tests and the production build pass; six browser scenarios and automated workspace accessibility checks pass. `scripts/asshown-demo-kit-smoke.mjs` verifies the seven gallery images, exact ZIP download, the supplied rust listing's two-supported/one-unknown result, seller-reply resolution, garment handoff, shopper upload, consent gating and studio cleanup. It deliberately does not request a new paid generation. Earlier live-generation evidence remains historical. Final preview `asshown-p947wymc4-ankitlade12-3052s-projects.vercel.app` is READY. All six hosted workspace scenarios passed. The full kit walkthrough passed using the same temporary share session as a user, including the exact ZIP download and studio cleanup. The initial agent-header download test timed out; user-session download and the rerun succeeded.
+
 ## Current scope: retailer link import removed — 2026-11-01
 
 At the user's explicit request, Amazon/retailer link import and its variant dropdowns were removed from the product. The active entry flow is pasted listing details plus product photos. The scraper, HTML parser dependency and obsolete importer tests/scripts were removed. Old open tabs receive HTTP 410 with a clear manual-entry message; no retailer request is made.

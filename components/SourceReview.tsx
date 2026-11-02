@@ -13,11 +13,7 @@ export function SourceReview({
     <section className="as-panel">
       <details>
         <summary>Review and correct source use</summary>
-        <p className="as-muted">
-          Original wording stays visible. Exclude a mistaken transcription or
-          wrong-variant statement with a reason; current findings will be
-          recalculated. Saved snapshots keep their historical version.
-        </p>
+
         <label className="as-field">
           Reason for changing source use
           <input

@@ -120,11 +120,7 @@ export function EvidencePackage({ product }: { product: Product }) {
       </details>
       <span className="as-kicker">PRIVATE EVIDENCE PACKAGE</span>
       <h2>Include the details you choose</h2>
-      <p className="as-muted">
-        Attach receipt screenshots, delivered-item photos or seller replies.
-        Images stay in this tab and are cleared when you leave this view or
-        refresh. Attachments do not change the evidence verdict.
-      </p>
+      <p className="as-muted">Attachments clear when you leave or refresh.</p>
       <label className="as-field">
         Attachment type
         <select
@@ -221,10 +217,8 @@ export function EvidencePackage({ product }: { product: Product }) {
         />
       </label>
       <p className="as-notice">
-        Check receipts for addresses, payment details and order identifiers.
-        Export includes original image bytes and any embedded metadata; crop or
-        redact in your image editor before attaching. No OCR or automatic
-        redaction is applied.
+        Redact private details before attaching. Exports include original images
+        and metadata.
       </p>
       <label className="as-checkbox">
         <input

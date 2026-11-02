@@ -1,0 +1,9 @@
+Item name: The indigo overshirt
+Brand: Illustrative catalog
+Retailer: Demo listing — not for sale
+SKU: DEMO-INDIGO-M
+Color: Indigo
+Size: M
+
+PASTE ONLY THE FOLLOWING INTO LISTING TEXT:
+Illustrative demo listing: The indigo overshirt, Indigo, size M. Long sleeves. 80% cotton, 20% polyester. Dry-clean only. Functional pockets. Button closure. Price: $79.00 USD. Shipping and tax are not supplied. This is a fictional test item, not an Amazon listing.

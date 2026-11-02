@@ -105,9 +105,7 @@ export function PrivateEvidenceLibrary({
       <span className="as-kicker">YOUR PRIVATE EVIDENCE</span>
       <h2>Keep the original, with the item</h2>
       <p className="as-muted">
-        Save product photos, receipts and seller replies for {variant}.
-        Originals remain private to your account for 30 days, unless you renew
-        or delete them. They are never published to the community automatically.
+        Private storage · 30 days · renew or delete anytime.
       </p>
       {signedOut ? (
         <Link className="as-secondary" href="/signin?callbackUrl=/check">

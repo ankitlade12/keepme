@@ -632,9 +632,7 @@ export function StudioApp({
     <div className="studio-layout">
       <aside className="studio-sidebar" aria-label="Try-on progress">
         <p className="sidebar-label">YouCam preview</p>
-        <p className="as-muted">
-          Maximum two paid tasks per session. Refresh resumes the existing task.
-        </p>
+        <p className="as-muted">Two generations per session.</p>
         <div className="step-list">
           {steps.map((label, index) => (
             <div
@@ -682,8 +680,8 @@ export function StudioApp({
               }
               subtitle={
                 experienceMode === "guided"
-                  ? "Run a repeatable 90-second scenario where a virtual try-on removes the shopper’s glasses."
-                  : "Pick a catalog garment or upload your own JPEG/PNG up to 10 MB. Nothing leaves this page before contract approval."
+                  ? "Synthetic demo: detect and restore missing glasses."
+                  : "Choose a garment and photo. Nothing is sent before consent."
               }
               sessionId={sessionId ?? "Creating…"}
             />
@@ -807,11 +805,6 @@ export function StudioApp({
                     <div className="scenario-copy">
                       <span className="section-kicker">The contract</span>
                       <h3>Change the jacket. Keep the glasses.</h3>
-                      <p>
-                        The fixture intentionally removes the eyewear after the
-                        garment edit. KeepMe must catch it before the shopper
-                        accepts the image.
-                      </p>
                     </div>
                     <div className="scenario-rules">
                       <span>
@@ -828,16 +821,13 @@ export function StudioApp({
                       </span>
                     </div>
                     <small className="scenario-disclosure">
-                      Controlled, synthetic evaluation fixture. It demonstrates
-                      product behavior and is not represented as a fresh YouCam
-                      failure.
+                      Synthetic demo · not a live YouCam result.
                     </small>
                   </div>
                 ) : (
                   <div className="garment-picker">
                     <div className="garment-picker-head">
                       <span>Demo catalog</span>
-                      <small>Select one to change the result</small>
                     </div>
                     <div
                       className="garment-catalog"
@@ -985,7 +975,6 @@ export function StudioApp({
                 <div className="card-heading" style={{ marginBottom: 0 }}>
                   <div>
                     <h2>Your Identity Contract</h2>
-                    <p>Version 1.0 · Current generation only</p>
                   </div>
                 </div>
                 <div className="allow-card">
@@ -1118,8 +1107,7 @@ export function StudioApp({
               Stop waiting
             </button>
             <p className="as-muted">
-              No estimated completion percentage. Processing may continue at the
-              provider if you leave this page.
+              Leaving this page does not cancel provider processing.
             </p>
           </section>
         )}
@@ -1129,7 +1117,6 @@ export function StudioApp({
             <StudioTopline
               eyebrow="Step 4 of 6"
               title="Your integrity check"
-              subtitle="Measured source/result evidence is shown before any overall assessment."
               sessionId={sessionId ?? "Session"}
             />
             <div
@@ -1175,10 +1162,6 @@ export function StudioApp({
               <div className="card-heading">
                 <div>
                   <h2>Source vs. virtual try-on</h2>
-                  <p>
-                    The garment edit is expected. Changes outside the permitted
-                    region are measured.
-                  </p>
                 </div>
                 <span className="demo-pill">
                   {experienceMode === "guided" ? (
@@ -1247,8 +1230,8 @@ export function StudioApp({
               <section className="studio-card">
                 <h3>Unmodified generator output</h3>
                 <p className="as-muted">
-                  The repaired asset is separate. The original remains available
-                  for comparison until session deletion.
+                  Original and repaired images are kept until you delete the
+                  session.
                 </p>
                 <img
                   src={`/api/v1/sessions/${sessionId}/original-result-image`}
@@ -1267,7 +1250,6 @@ export function StudioApp({
                 <div className="card-heading">
                   <div>
                     <h3>Component evidence</h3>
-                    <p>Threshold profile: mvp_conservative_v1</p>
                   </div>
                 </div>
                 <div className="component-list">
@@ -1381,7 +1363,6 @@ export function StudioApp({
             <StudioTopline
               eyebrow="Step 5 of 6"
               title="Your integrity receipt"
-              subtitle="A plain-language record of what was requested, checked, and retained."
               sessionId={sessionId ?? "Session"}
             />
             <section className="studio-card receipt">
@@ -1554,7 +1535,7 @@ function StudioTopline({
 }: {
   eyebrow: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   sessionId: string;
 }) {
   return (
@@ -1562,7 +1543,7 @@ function StudioTopline({
       <div>
         <span className="section-kicker">{eyebrow}</span>
         <h1 className="studio-title">{title}</h1>
-        <p className="studio-subtitle">{subtitle}</p>
+        {subtitle && <p className="studio-subtitle">{subtitle}</p>}
       </div>
       <span className="session-pill">
         Private session · {sessionId.slice(-6)}

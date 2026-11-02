@@ -505,7 +505,7 @@ export function ShoppingWorkspace({
           ))}
           <div className="as-side-note">
             <ShieldCheck size={20} />
-            <p>A good decision starts with knowing what you don’t know.</p>
+
             <Link href="/studio" className="as-quiet-link">
               YouCam preview studio ↗
             </Link>
@@ -514,13 +514,7 @@ export function ShoppingWorkspace({
         <main className="as-content" id="main-content">
           <div className="as-page-title">
             <div>
-              <span className="as-kicker">A LITTLE MORE CLARITY</span>
               <h1>{nav.find((n) => n.id === view)?.label}</h1>
-              <p>
-                {view === "check"
-                  ? "Paste the details. Add photos. Check what matters."
-                  : "Your shopping decisions, with the details kept in view."}
-              </p>
             </div>
             <button className="as-secondary" onClick={loadExamples}>
               <Sparkles size={15} /> Explore example
@@ -559,10 +553,6 @@ export function ShoppingWorkspace({
                   <section className="as-panel">
                     <h2>What caught your eye?</h2>
 
-                    <p className="as-muted">
-                      Paste the exact listing. We’ll keep seller statements
-                      separate from what remains unknown.
-                    </p>
                     <label className="as-field">
                       Item name
                       <input
@@ -631,8 +621,7 @@ export function ShoppingWorkspace({
                     <section className="as-panel">
                       <h2>Add product photos</h2>
                       <p className="as-muted">
-                        Optional for text checks. Upload 1–3 JPEG or PNG files,
-                        up to 10 MB and 20 megapixels each.
+                        1–3 JPG or PNG photos · up to 10 MB and 20 MP each.
                       </p>
                       <label className="as-upload">
                         <Upload size={25} />
@@ -655,26 +644,9 @@ export function ShoppingWorkspace({
                         ))}
                       </div>
                       <p className="as-muted">
-                        Photos stay in memory and are omitted after refresh. An
-                        explicit preview handoff transfers the selected garment
-                        to the studio. Nothing is sent to YouCam here.
+                        Photos clear on refresh. YouCam receives them only after
+                        studio consent.
                       </p>
-                    </section>
-                    <section className="as-panel">
-                      <span className="as-kicker">NO SELFIE REQUIRED</span>
-                      <h2 style={{ marginTop: 14 }}>
-                        Useful before the preview.
-                      </h2>
-                      <p className="as-muted">
-                        Care instructions can rule out a garment. A missing
-                        pocket detail can tell you what to ask. Start there.
-                      </p>
-                      <button
-                        className="as-quiet-link as-icon-btn"
-                        onClick={loadExamples}
-                      >
-                        Try the two-item example →
-                      </button>
                     </section>
                   </div>
                 </div>
@@ -687,8 +659,7 @@ export function ShoppingWorkspace({
                     onInterpret={(next) => revise(next)}
                   />
                   <p className="as-muted">
-                    Essentials are firm constraints. Preferences never override
-                    them. Version {version}.
+                    Essentials first · Version {version}.
                   </p>
                   {requirements.map((r) => (
                     <div className="as-require-row" key={r.id}>
@@ -1002,8 +973,7 @@ export function ShoppingWorkspace({
                         <section className="as-panel">
                           <h2>Your next step</h2>
                           <p className="as-muted">
-                            Current choice: {product.decision}. You stay in
-                            control, including when an essential conflicts.
+                            Current choice: {product.decision}.
                           </p>
                           <div className="as-row-actions">
                             <button
@@ -1047,27 +1017,20 @@ export function ShoppingWorkspace({
                     <h2 style={{ marginTop: 15 }}>
                       See the look. Keep the context.
                     </h2>
-                    <p className="as-muted">
-                      The preview studio uses YouCam AI Clothes v3 with an
-                      explicit appearance contract. Product suitability, garment
-                      checks, and personal appearance checks remain separate.
-                    </p>
+
                     <div className="as-notice warning">
                       A preview cannot prove fit, comfort, fabric composition,
                       opacity, or functional pockets.
                     </div>
-                    <h3>Before you continue</h3>
+
                     <p className="as-muted">
-                      Your selected garment is passed to the configured live
-                      studio. Choose your photo, review protected regions, and
-                      approve processing there. Personal photos go to Perfect
-                      Corp’s YouCam only after that approval. Your product
-                      evidence remains in this tab.
+                      Review your photo and consent in the studio before sending
+                      it to YouCam.
                     </p>
                     <p className="as-notice">
                       {liveAvailable
-                        ? "The live provider is configured. The studio will validate your uploads before generation."
-                        : "Live generation is not configured on this installation. The studio offers a clearly labeled controlled example; it is not a live API result."}
+                        ? "Live YouCam preview available."
+                        : "Live preview unavailable. A synthetic demo is available."}
                     </p>
                     <button
                       className="as-primary"
@@ -1085,11 +1048,6 @@ export function ShoppingWorkspace({
                     >
                       Open preview studio <ArrowUpRight size={16} />
                     </button>
-                    <p className="as-muted">
-                      Garment-attribute verification is not yet evaluated and
-                      must remain unchecked. Inherited appearance checks require
-                      their integrity service.
-                    </p>
                   </section>
                   <section className="as-panel">
                     <div className="as-preview-box">
@@ -1099,8 +1057,7 @@ export function ShoppingWorkspace({
                       />
                     </div>
                     <p className="as-muted">
-                      Recorded example · synthetic shopper · not your item or a
-                      fresh generation.
+                      Recorded demo · synthetic shopper.
                     </p>
                   </section>
                 </div>
@@ -1282,8 +1239,7 @@ export function ShoppingWorkspace({
               <section className="as-panel">
                 <h2>Snapshots, not rewritten history.</h2>
                 <p className="as-muted">
-                  Guest reports last for this browser session. Export to keep a
-                  copy. Photos are omitted.
+                  Export guest reports to keep them. Photos are not saved.
                 </p>
                 {history.length ? (
                   history.map((h) => (
@@ -1322,10 +1278,7 @@ export function ShoppingWorkspace({
                     </div>
                   ))
                 ) : (
-                  <p className="as-muted">
-                    No saved decisions yet. Review your shortlist, then approve
-                    a report.
-                  </p>
+                  <p className="as-muted">No saved checks yet.</p>
                 )}
               </section>
             </>
@@ -1333,10 +1286,7 @@ export function ShoppingWorkspace({
           {view === "profiles" && (
             <section className="as-panel">
               <h2>Requirements for your everyday.</h2>
-              <p className="as-muted">
-                Save a named set for this guest session. Applying it creates a
-                new version; past decisions stay unchanged.
-              </p>
+
               <label className="as-field">
                 Profile name
                 <input
@@ -1487,9 +1437,8 @@ export function ShoppingWorkspace({
                         deliveredSize.trim().toLowerCase() !==
                           product.size.trim().toLowerCase()) && (
                         <p className="as-notice warning">
-                          These details differ from the checked variant. A
-                          comparison cannot establish a seller discrepancy until
-                          you review the order and acknowledge this mismatch.
+                          These details differ from the checked variant. Review
+                          your order before exporting.
                         </p>
                       )}
                     <label className="as-checkbox">
@@ -1518,9 +1467,7 @@ export function ShoppingWorkspace({
                       />
                     </label>
                     <p className="as-muted">
-                      Manual review only. Automated arrival-image comparison is
-                      not validated. This draft makes no claim about refunds or
-                      return eligibility.
+                      Manual comparison · no refund eligibility assessment.
                     </p>
                     <button
                       className="as-primary"
@@ -1538,10 +1485,7 @@ export function ShoppingWorkspace({
                     </button>
                   </>
                 ) : (
-                  <p className="as-muted">
-                    Add a product first to preserve its original listing and
-                    variant.
-                  </p>
+                  <p className="as-muted">Add an item first.</p>
                 )}
               </section>
             </>
@@ -1644,9 +1588,7 @@ export function ShoppingWorkspace({
                     </button>
                   </>
                 ) : (
-                  <p className="as-muted">
-                    Add an item before writing a variant-specific note.
-                  </p>
+                  <p className="as-muted">Add an item first.</p>
                 )}
                 {notes.map((n) => (
                   <article className="as-evidence" key={n.id}>
@@ -1678,17 +1620,12 @@ export function ShoppingWorkspace({
               <section className="as-panel">
                 <h2>Your data, explained plainly.</h2>
                 <p className="as-muted">
-                  Product text, requirements, reports, profiles, and private
-                  notes are stored in this tab’s session storage with a
-                  30-minute restore window. Product images are kept in memory
-                  and omitted on refresh. This is not authenticated cross-device
-                  history.
+                  Guest data restores for 30 minutes. Unsaved photos clear on
+                  refresh.
                 </p>
                 <p className="as-muted">
-                  The separate YouCam studio has its own session and deletion
-                  controls. Deleting this workspace does not delete studio
-                  assets or promise deletion from Perfect Corp. Use the studio’s
-                  delete action for those assets.
+                  Studio images are deleted separately. Provider retention may
+                  differ.
                 </p>
                 <div className="as-notice">
                   No product notes are public. Nothing is sent to sellers. No
@@ -1749,9 +1686,8 @@ export function ShoppingWorkspace({
         >
           <h2 id="delete-title">Delete this workspace?</h2>
           <p className="as-muted">
-            This removes product text, images in memory, requirements, saved
-            reports, profiles, and private notes from this tab. The separate
-            preview studio must be deleted there.
+            Delete this tab’s items, requirements, reports, profiles and notes?
+            Studio images are deleted separately.
           </p>
           <div className="as-row-actions">
             <button

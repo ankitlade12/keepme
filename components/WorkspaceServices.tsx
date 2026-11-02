@@ -63,10 +63,8 @@ export function AccountPanel({
     <section className="as-panel">
       <h2>Keep your decisions with you.</h2>
       <p className="as-muted">
-        Save a version of your workspace on the server. Guest copies expire
-        after 30 minutes; authenticated account copies remain until deleted.
-        Saved private-evidence links are retained; unsaved photo uploads are
-        omitted.
+        Account saves last until deleted. Guest saves expire after 30 minutes.
+        Unsaved photos are excluded.
       </p>
       {account && !account.accountAvailable && (
         <p className="as-notice warning">
@@ -227,9 +225,7 @@ export function CommunityPanel({
     <section className="as-panel">
       <h2>Community evidence, with context.</h2>
       <p className="as-muted">
-        Every note is a contributor report. Moderation checks publication rules,
-        not product truth. Exact variants and dates stay visible; copied reports
-        are not counted again.
+        Community observations · not product certification.
       </p>
       {!state?.enabled && (
         <p className="as-notice warning">
@@ -307,10 +303,8 @@ export function CommunityPanel({
       )}
       <h3>Published reports</h3>
       <p className="as-muted">
-        Contributor observations are not product certification. Linking requires
-        the same retailer, SKU, color and size. Disputed or withdrawn reports
-        stop supporting current findings. Saved exports remain historical
-        snapshots.
+        Only matching variants support your check. Disputed or withdrawn notes
+        are excluded.
       </p>
       {state?.published.length ? (
         state.published.map((n) => (
@@ -373,10 +367,7 @@ export function CommunityPanel({
           </article>
         ))
       ) : (
-        <p className="as-muted">
-          No published reports. Private product checks work without community
-          evidence.
-        </p>
+        <p className="as-muted">No published notes yet.</p>
       )}
       <label className="as-field">
         Reason for a dispute, withdrawal, appeal, or moderation decision
@@ -412,9 +403,7 @@ export function CommunityPanel({
                     />
                   </label>
                   <p className="as-muted">
-                    Submitting removes the current report from public evidence
-                    until a moderator reviews the correction. Add a reason
-                    below.
+                    Corrections return the note to moderation.
                   </p>
                   <button
                     className="as-secondary"
@@ -456,11 +445,7 @@ export function CommunityPanel({
       {state?.moderator && (
         <>
           <h3>Moderation queue</h3>
-          <p className="as-muted">
-            New contributors are reviewed first, then oldest reports.
-            Publication history affects review order only, never the truth of a
-            claim.
-          </p>
+
           {state.queue.map((n) => (
             <article className="as-evidence" key={n.id}>
               <h3>
@@ -578,9 +563,7 @@ export function SupportPanel() {
     <section className="as-panel">
       <h2>Something doesn’t look right?</h2>
       <p className="as-muted">
-        File an image-free report. Support receives only the category and text
-        you choose to include. Do not paste private credentials or personal
-        photos.
+        Text only. Do not include credentials or private information.
       </p>
       <label className="as-field">
         Report category
@@ -798,9 +781,8 @@ export function LanguagePanel({
         />
       </label>
       <p className="as-muted">
-        Dictation starts only when selected. Your browser may use its own speech
-        service; you can edit the transcript before sending it to the language
-        assistant.
+        Dictation may use your browser’s speech service. Review the transcript
+        before sending.
       </p>
       <button
         className="as-secondary"

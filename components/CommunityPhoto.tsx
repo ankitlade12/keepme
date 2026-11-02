@@ -81,10 +81,8 @@ export function CommunityPhoto({
     <details>
       <summary>Add an optional product-only photo</summary>
       <p className="as-muted">
-        Use a flat-lay or label close-up with no people. Mask addresses, order
-        numbers, faces, location clues and other private details. Only the
-        reviewed, flattened copy is uploaded; private originals from your
-        account are never attached automatically.
+        Product-only photos. Mask private details; only your reviewed copy is
+        shared.
       </p>
       <label className="as-field">
         Product-only JPEG or PNG

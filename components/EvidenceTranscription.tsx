@@ -38,10 +38,7 @@ export function EvidenceTranscription({
   return (
     <details>
       <summary>Read text from this evidence</summary>
-      <p className="as-muted">
-        Copy visible wording manually, or request an editable AI transcription.
-        An image alone does not prove fabric, fit or function.
-      </p>
+
       <label className="as-checkbox">
         <input
           type="checkbox"

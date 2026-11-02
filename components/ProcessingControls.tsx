@@ -16,9 +16,8 @@ export function ProcessingControls() {
     <details>
       <summary>Privacy incident controls</summary>
       <p className="as-muted">
-        Pause new model and YouCam requests while investigating a serious issue.
-        Existing results, private evidence, deletion and support remain
-        available. Already-submitted provider jobs cannot be recalled.
+        Pause new AI requests. Submitted jobs continue; deletion and support
+        remain available.
       </p>
       <p>
         New AI requests:{" "}
