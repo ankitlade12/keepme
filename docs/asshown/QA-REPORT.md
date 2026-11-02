@@ -2,7 +2,15 @@
 
 Scope: all 39 M/B/G functional requirements. A passing workflow is not a validated model accuracy claim or a production release approval. This report supersedes historical verification counts in STATUS.md.
 
-## Retailers
+## Amazon import correction — 2026-11-02
+
+The earlier manual fallback did not prove Amazon had blocked this product. Diagnosis found that the HTTP client treated gzip-compressed bytes as UTF-8 HTML. After decompression, the 2.7 MB page was readable but did not contain the JSON-LD Product format the original parser required.
+
+The importer now bounds both downloaded and decompressed bodies, supports gzip/deflate/Brotli, and extracts Amazon title, brand and product facts only when the page has one matching selected ASIN. It excludes reviews and scripts. CAPTCHA, ambiguous/mismatched identity and missing facts remain manual fallback with an actionable reason. Color/size remain unconfirmed; no product-specific fixture is served as live data.
+
+Local real-network import of B096YM16SV returned `mode: imported`, the correct jacket title, Amazon Essentials brand and care instructions. The updated regression suite has 92 passing tests; production build passes. Hosted browser verification on `asshown-ft1i8b6za-ankitlade12-3052s-projects.vercel.app` confirmed real product fields populate and color/size remain unconfirmed. An Amazon search URL is used for invalid-input testing. The old B000000000 fixture unexpectedly resolves to a product and must not be assumed nonexistent. CAPTCHA/mismatch/missing facts are covered by controlled unit fixtures. Other retailers and arbitrary Amazon variants are not guaranteed by this single-case check.
+
+## Earlier retailer results (before the correction above)
 
 - Hosted Amazon `/dp/B0CM6S894C?tag=qa-tracking`: HTTP 200 **manual fallback**, canonical URL and ASIN preserved, tracking removed, no invented title/text, variant remains unconfirmed. This ASIN comes from a published catalog; current stock/listing availability is not established.
 - Amazon search URL: HTTP 422 with request for a full product link.

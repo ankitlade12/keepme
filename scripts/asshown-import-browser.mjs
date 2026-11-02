@@ -4,6 +4,7 @@ const base = process.env.ASSHOWN_URL ?? "http://localhost:3001";
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
+  page.setDefaultTimeout(30000);
   if (
     new URL(base).hostname.endsWith(".vercel.app") &&
     process.env.VERCEL_OIDC_TOKEN
@@ -20,36 +21,81 @@ try {
   await page
     .getByText("Add an Amazon or supported retailer link", { exact: true })
     .click();
-  // Intentionally nonexistent fixture: verify honest fallback, not product extraction.
   await page
     .getByLabel("Public product URL")
-    .fill("https://www.amazon.com/dp/B000000000?tag=test");
-  const response = page.waitForResponse(
+    .fill("https://www.amazon.com/dp/B096YM16SV?tag=test");
+  const imported = page.waitForResponse(
     (r) => r.url() === `${base}/api/asshown/import`,
   );
   await page
     .getByRole("button", { name: "Import listing", exact: true })
     .click();
-  const result = await response;
-  assert.equal(result.status(), 200);
-  const data = await result.json();
-  assert.equal(data.mode, "manual");
-  assert.equal(data.productId, "B000000000");
-  assert.equal(data.sourceUrl, "https://www.amazon.com/dp/B000000000");
-  assert.equal(data.variantConfirmed, false);
+  const live = await imported;
+  assert.equal(live.status(), 200);
+  const product = await live.json();
+  assert.equal(product.mode, "imported", product.message);
+  assert.equal(product.productId, "B096YM16SV");
+  assert.match(product.title, /Polar Fleece Jacket/);
+  assert.equal(product.brand, "Amazon Essentials");
+  assert.match(product.text, /Machine Wash Cold/i);
   await page
     .getByRole("status")
-    .filter({
-      hasText: "Amazon link saved. Listing details could not be retrieved.",
-    })
+    .filter({ hasText: "Imported public product text" })
+    .waitFor();
+  assert.equal(
+    await page.getByLabel("Item name", { exact: true }).inputValue(),
+    product.title,
+  );
+  assert.match(
+    await page
+      .getByPlaceholder(
+        "Include care, fabric, sleeves, closures, pockets, and price if supplied.",
+      )
+      .inputValue(),
+    /Machine Wash Cold/i,
+  );
+  assert.equal(
+    await page
+      .getByRole("checkbox", { name: /I confirm this text/ })
+      .isChecked(),
+    false,
+  );
+  assert.equal(
+    await page.getByLabel("Color", { exact: true }).inputValue(),
+    "",
+  );
+  assert.equal(await page.getByLabel("Size", { exact: true }).inputValue(), "");
+  await page.screenshot({
+    path: "artifacts/full-qa/amazon-import-success.png",
+    fullPage: true,
+  });
+  console.log(
+    "Real Amazon listing extracted and populated in browser; variant confirmation still required: passed.",
+  );
+  await page.reload();
+  await page
+    .getByText("Add an Amazon or supported retailer link", { exact: true })
+    .click();
+  // A search URL is unambiguously not a product; never assume an ASIN is nonexistent.
+  await page
+    .getByLabel("Public product URL")
+    .fill("https://www.amazon.com/s?k=jacket");
+  const rejected = page.waitForResponse(
+    (r) => r.url() === `${base}/api/asshown/import`,
+  );
+  await page
+    .getByRole("button", { name: "Import listing", exact: true })
+    .click();
+  assert.equal((await rejected).status(), 422);
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Use an Amazon product link" })
     .waitFor();
   assert.equal(
     await page.getByLabel("Item name", { exact: true }).inputValue(),
     "",
   );
-  console.log(
-    "Amazon link intake, tracking removal, unknown variant and visible manual fallback passed.",
-  );
+  console.log("Non-product Amazon URL rejected with visible guidance: passed.");
 } finally {
   await browser.close();
 }

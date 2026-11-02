@@ -1,5 +1,27 @@
 import { lookup } from "node:dns/promises";
 import https from "node:https";
+import { parse, type DefaultTreeAdapterMap } from "parse5";
+import { gunzipSync, inflateSync, brotliDecompressSync } from "node:zlib";
+
+export function decodeRetailerBody(bytes: Buffer, encoding = "") {
+  const options = { maxOutputLength: 4 * 1024 * 1024 };
+  const codec = encoding.trim().toLowerCase();
+  const decoded =
+    codec === "gzip"
+      ? gunzipSync(bytes, options)
+      : codec === "deflate"
+        ? inflateSync(bytes, options)
+        : codec === "br"
+          ? brotliDecompressSync(bytes, options)
+          : !codec || codec === "identity"
+            ? bytes
+            : null;
+  if (!decoded)
+    throw new Error("The retailer returned an unsupported content encoding.");
+  if (decoded.length > options.maxOutputLength)
+    throw new Error("The retailer page is too large.");
+  return decoded.toString("utf8");
+}
 export function permittedUrl(raw: string, hosts: string[]) {
   const u = new URL(raw);
   if (
@@ -77,13 +99,21 @@ async function fetchPublic(url: URL) {
             }
             chunks.push(chunk);
           });
-          res.on("end", () =>
-            resolve({
-              text: Buffer.concat(chunks).toString("utf8"),
-              status: res.statusCode ?? 500,
-              type: String(res.headers["content-type"] ?? ""),
-            }),
-          );
+          res.on("error", reject);
+          res.on("end", () => {
+            try {
+              resolve({
+                text: decodeRetailerBody(
+                  Buffer.concat(chunks),
+                  res.headers["content-encoding"],
+                ),
+                status: res.statusCode ?? 500,
+                type: String(res.headers["content-type"] ?? ""),
+              });
+            } catch (error) {
+              reject(error);
+            }
+          });
         },
       );
       req.setTimeout(8000, () =>
@@ -138,6 +168,55 @@ export function parseProduct(html: string) {
       .join("\n"),
   };
 }
+export function parseAmazonProduct(html: string, asin: string) {
+  type Node = DefaultTreeAdapterMap["node"];
+  const fields = new Map<string, Node[]>();
+  function visit(node: Node) {
+    if ("attrs" in node) {
+      const id = node.attrs.find((a) => a.name === "id")?.value;
+      if (id) fields.set(id, [...(fields.get(id) ?? []), node]);
+    }
+    if ("childNodes" in node) node.childNodes.forEach(visit);
+  }
+  function text(node: Node): string {
+    if (node.nodeName === "#text" && "value" in node) return node.value;
+    if (
+      "tagName" in node &&
+      ["script", "style", "noscript"].includes(node.tagName)
+    )
+      return "";
+    return "childNodes" in node ? node.childNodes.map(text).join(" ") : "";
+  }
+  visit(parse(html));
+  const identity = fields.get("ASIN") ?? [];
+  if (
+    identity.length !== 1 ||
+    !("attrs" in identity[0]) ||
+    identity[0].attrs.find((a) => a.name === "value")?.value !== asin
+  )
+    throw new Error(
+      "The page does not identify the requested Amazon product. Paste its listing instead.",
+    );
+  const field = (id: string) =>
+    (fields.get(id) ?? []).map(text).join(" ").replace(/\s+/g, " ").trim();
+  const title = field("productTitle").slice(0, 150);
+  const details =
+    field("productFactsDesktop_feature_div") || field("feature-bullets");
+  if (!title || !details)
+    throw new Error(
+      "The page does not contain readable Amazon product details. Paste its listing instead.",
+    );
+  return {
+    title,
+    brand: field("bylineInfo")
+      .replace(/^Visit the (.+) Store$/, "$1")
+      .replace(/^Brand:\s*/, "")
+      .slice(0, 150),
+    productId: asin,
+    text: details.slice(0, 10000),
+  };
+}
+
 function matchesRobotsPath(pattern: string, path: string) {
   let p = 0,
     t = 0,
@@ -234,7 +313,12 @@ export async function importRetailer(raw: string, hosts: string[]) {
         productId: amazon.productId,
         mode: "imported" as const,
       };
-    } catch {
+    } catch (error) {
+      const detail =
+        error instanceof Error &&
+        /^(The (retailer|page)|This (retailer|page)) /.test(error.message)
+          ? error.message
+          : "The retailer could not be reached. Paste the listing instead.";
       return {
         ...amazon,
         mode: "manual" as const,
@@ -242,8 +326,7 @@ export async function importRetailer(raw: string, hosts: string[]) {
         brand: "",
         text: "",
         variantConfirmed: false,
-        message:
-          "Amazon link saved. Listing details could not be retrieved. Paste the product title and listing text below, or add screenshots to your private evidence library. Confirm the exact color and size.",
+        message: `Amazon link saved, but details were not imported. ${detail} Confirm the exact color and size.`,
       };
     }
   }
@@ -263,7 +346,9 @@ async function fetchRetailer(raw: string, hosts: string[]) {
   if (page.status !== 200 || !page.type.includes("text/html"))
     throw new Error("This page cannot be imported. Paste the listing instead.");
   return {
-    ...parseProduct(page.text),
+    ...(amazonProduct(raw)
+      ? parseAmazonProduct(page.text, amazonProduct(raw)!.productId)
+      : parseProduct(page.text)),
     sourceUrl: url.href,
     sourceDate: new Date().toISOString(),
     variantConfirmed: false,

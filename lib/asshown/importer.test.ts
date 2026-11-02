@@ -1,7 +1,10 @@
 // @vitest-environment node
+import { gzipSync, deflateSync, brotliCompressSync } from "node:zlib";
 import { describe, it, expect } from "vitest";
 import {
   amazonProduct,
+  parseAmazonProduct,
+  decodeRetailerBody,
   permittedUrl,
   publicIPv4,
   parseProduct,
@@ -102,4 +105,42 @@ it("rejects unsafe and non-product Amazon URLs", () => {
   ]) {
     expect(() => amazonProduct(url)).toThrow();
   }
+});
+
+const amazonFixture = `<input id="ASIN" value="B096YM16SV"><span id="productTitle">Example &amp; Jacket</span><a id="bylineInfo">Visit the Example Store</a><div id="productFactsDesktop_feature_div"><div>Care instructions <span>Machine Wash Cold</span></div><script>untrusted()</script><p>Two zippered hand pockets.</p></div><div id="reviews">Waterproof</div>`;
+it("decodes retailer compression before extracting exact-ASIN Amazon details", () => {
+  for (const [encoding, bytes] of [
+    ["gzip", gzipSync(amazonFixture)],
+    ["deflate", deflateSync(amazonFixture)],
+    ["br", brotliCompressSync(amazonFixture)],
+    ["identity", Buffer.from(amazonFixture)],
+  ] as const) {
+    const product = parseAmazonProduct(
+      decodeRetailerBody(bytes, encoding),
+      "B096YM16SV",
+    );
+    expect(product.title).toBe("Example & Jacket");
+    expect(product.brand).toBe("Example");
+    expect(product.text).toContain("Machine Wash Cold");
+    expect(product.text).not.toMatch(/untrusted|Waterproof/);
+  }
+});
+it("rejects corrupt compression and bounds decompressed pages", () => {
+  expect(() => decodeRetailerBody(Buffer.from("invalid"), "gzip")).toThrow();
+  expect(() =>
+    decodeRetailerBody(gzipSync(Buffer.alloc(5 * 1024 * 1024)), "gzip"),
+  ).toThrow();
+  expect(() => decodeRetailerBody(Buffer.from("test"), "unknown")).toThrow();
+});
+it("rejects CAPTCHA, mismatched ASINs, duplicate identities and empty details", () => {
+  for (const html of [
+    "<html>Robot check</html>",
+    amazonFixture.replace("B096YM16SV", "B012345678"),
+    amazonFixture + '<input id="ASIN" value="B096YM16SV">',
+    amazonFixture.replace(
+      'id="productFactsDesktop_feature_div"',
+      'id="unrelated"',
+    ),
+  ])
+    expect(() => parseAmazonProduct(html, "B096YM16SV")).toThrow();
 });
