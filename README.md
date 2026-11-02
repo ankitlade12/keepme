@@ -43,7 +43,6 @@ Copy `.env.example` to `.env.local` and fill only the services you intend to ena
 | Signed preview receipts and cleanup     | `RECEIPT_SIGNING_SECRET`, `CRON_SECRET`                                                                                                                                              |
 | Account history                         | Clerk publishable/server keys and PostgreSQL                                                                                                                                         |
 | Community moderation                    | `ASSHOWN_MODERATOR_IDS` containing Clerk user IDs or `ASSHOWN_MODERATOR_EMAILS` containing verified Clerk email addresses; `ASSHOWN_COMMUNITY_ENABLED=true` only after launch review |
-| Public retailer import                  | `ASSHOWN_RETAILER_HOSTS` containing exact, explicitly approved hostnames                                                                                                             |
 | Text interpretation/Spanish translation | `OPENAI_API_KEY`, `ASSHOWN_AI_MODEL`                                                                                                                                                 |
 | Optional visual observations            | The same OpenAI key and `ASSHOWN_VISION_MODEL` with image/structured-output support                                                                                                  |
 
@@ -84,7 +83,7 @@ Guest browser state has a 30-minute restore window; uploaded product images are 
 
 Baseline: `ankitlade12/keepme` commit `2c4053db1c5b3144be29340f57a5419824db4b96` (MIT). The original project documentation is retained in [KEEPME_BASELINE_README.md](docs/asshown/KEEPME_BASELINE_README.md).
 
-AsShown adds the requirement/evidence policy, variant-aware sources, seller questions/replies, shortlist comparison, account workspace storage, profiles/history, retailer import boundary, community moderation, arrival review, language assistance, support, and a new responsive UI. It also strengthens consent, generation reservation, refresh recovery, deletion behavior, repair lineage, and unchecked-verifier behavior in the inherited preview implementation.
+AsShown adds the requirement/evidence policy, variant-aware sources, seller questions/replies, shortlist comparison, account workspace storage, profiles/history, community moderation, arrival review, language assistance, support, and a new responsive UI. It also strengthens consent, generation reservation, refresh recovery, deletion behavior, repair lineage, and unchecked-verifier behavior in the inherited preview implementation.
 
 Submission materials and remaining launch work are in [SUBMISSION.md](docs/asshown/SUBMISSION.md). Keep the MIT license and third-party notices when redistributing.
 

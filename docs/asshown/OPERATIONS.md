@@ -33,6 +33,6 @@ Use development Clerk credentials only for `scripts/asshown-account-smoke.mjs` a
 - Set up a public judge-accessible deployment and production authentication configuration before distributing a submission URL. Current previews require Vercel access.
 - Review the local captioned video draft, repository access, actual costs and Devpost fields before publication. No submission or external message is automated by these scripts.
 
-Amazon.com product links are recognized by ASIN. Automatic fetching respects robots rules and does not follow redirects or bypass retailer blocks. When retrieval fails, only the source link and product ID are retained; the user must paste listing details and confirm the variant. Other retailers require ASSHOWN_RETAILER_HOSTS.
+Retailer link import was removed at the user’s request. Intake uses pasted product details and uploaded photos. The retired import endpoint returns HTTP 410 for older open tabs and makes no outbound requests.
 
 For originals over 4 MB, the web service issues a five-minute, single-object, GET-only private Blob URL to the authenticated scanner. The scanner rejects redirects and non-private-Blob hosts, bounds its download to 10 MB, verifies SHA-256, and returns the scanned hash with its malware decision. The web service rejects a missing or mismatched hash. Never log these short-lived URLs. This avoids the internal service request-body ceiling without skipping original-byte scanning.

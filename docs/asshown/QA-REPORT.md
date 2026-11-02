@@ -2,6 +2,12 @@
 
 Scope: all 39 M/B/G functional requirements. A passing workflow is not a validated model accuracy claim or a production release approval. This report supersedes historical verification counts in STATUS.md.
 
+## Current scope: retailer link import removed — 2026-11-01
+
+At the user's explicit request, Amazon/retailer link import and its variant dropdowns were removed from the product. The active entry flow is pasted listing details plus product photos. The scraper, HTML parser dependency and obsolete importer tests/scripts were removed. Old open tabs receive HTTP 410 with a clear manual-entry message; no retailer request is made.
+
+81 tests pass across 21 files after retiring the importer-specific suite. Production build and six browser regression scenarios pass, including absence of link-import controls and variant confirmation reset on edits. Final preview `asshown-8fuco4snk-ankitlade12-3052s-projects.vercel.app` is READY. All six hosted browser scenarios passed; the retired endpoint returned HTTP 410. Fresh-browser review access and the absence of import controls were verified. Historical import results below describe retired behavior, not a current feature. The remaining PRD phases are unchanged; FR07 is explicitly removed from current scope by the user.
+
 ## Amazon variant dropdowns — 2026-11-01 client date
 
 Amazon import now reads bounded, inert JSON variant metadata rather than executing retailer scripts. It preselects the exact requested ASIN's color and size and presents only combinations listed for the same other dimensions (for example, material). The captured B096YM16SV page provides Black / X-Large and 66 combinations for recycled polyester. This is not a stock/price guarantee.

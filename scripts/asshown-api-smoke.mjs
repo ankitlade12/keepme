@@ -52,7 +52,7 @@ const forged = await fetch(`${base}/api/asshown/workspace`, {
 assert.equal(forged.status, 403);
 assert.equal(
   (await call(a, "import", "POST", { url: "https://127.0.0.1/secret" })).status,
-  422,
+  410,
 );
 assert.equal(
   (await call(a, "community", "POST", { text: "Publish this" })).status,

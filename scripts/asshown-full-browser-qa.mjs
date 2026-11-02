@@ -231,35 +231,27 @@ try {
       false,
     );
   });
-  await run("amazon-manual-import-requires-new-confirmation", async (p) => {
+  await run("manual-intake-without-retailer-import", async (p) => {
     await p
       .getByRole("button", { name: "1. Add your item", exact: true })
       .click();
-    await p.getByRole("checkbox", { name: /I confirm this text/ }).check();
-    await p.route("**/api/asshown/import", (r) =>
-      r.fulfill({
-        json: {
-          mode: "manual",
-          productId: "B0CM6S894C",
-          sourceUrl: "https://www.amazon.com/dp/B0CM6S894C",
-          message: "Retailer blocked automatic retrieval. Paste the listing.",
-        },
-      }),
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Import listing", exact: true })
+        .count(),
+      0,
+    );
+    assert.equal(
+      await p.getByLabel("Public product URL", { exact: true }).count(),
+      0,
     );
     await p
-      .getByText("Add an Amazon or supported retailer link", { exact: true })
-      .click();
-    await p
-      .getByLabel("Public product URL", { exact: true })
-      .fill("https://www.amazon.com/dp/B0CM6S894C");
-    await p
-      .getByRole("button", { name: "Import listing", exact: true })
-      .click();
-    await p
-      .getByText("Retailer blocked automatic retrieval. Paste the listing.", {
-        exact: true,
-      })
-      .waitFor();
+      .getByLabel("Item name", { exact: true })
+      .fill("User supplied jacket");
+    await p.getByLabel("Color", { exact: true }).fill("Blue");
+    await p.getByLabel("Size", { exact: true }).fill("M");
+    await p.getByRole("checkbox", { name: /I confirm this text/ }).check();
+    await p.getByLabel("Size", { exact: true }).fill("L");
     assert.equal(
       await p
         .getByRole("checkbox", { name: /I confirm this text/ })

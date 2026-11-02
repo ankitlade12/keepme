@@ -99,7 +99,6 @@ export function ShoppingWorkspace({
   liveAvailable: boolean;
   accountAvailable?: boolean;
 }) {
-  const [importUrl, setImportUrl] = useState("");
   const [view, setView] = useState<View>("check"),
     [step, setStep] = useState(0),
     [products, setProducts] = useState<Product[]>([]),
@@ -136,63 +135,11 @@ export function ShoppingWorkspace({
     if (deleteOpen) deleteDialog.current?.showModal();
     else deleteDialog.current?.close();
   }, [deleteOpen]);
-  const [variants, setVariants] = useState<
-    Array<{ asin: string; color: string; size: string }>
-  >([]);
   const expires = useRef(0);
   const initialized = useRef(false);
   useEffect(() => {
     fetch("/api/asshown/workspace").catch(() => {});
   }, []);
-  async function importUrlListing(url = importUrl, changingVariant = false) {
-    setBusy(true);
-    setError("");
-    try {
-      const r = await fetch("/api/asshown/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error);
-      if (data.mode === "manual") {
-        if (changingVariant)
-          throw new Error(
-            `Could not load that variant. Your previous selection is unchanged. ${data.message}`,
-          );
-        setVariants([]);
-        setDraft((current) => ({
-          ...current,
-          sku: data.productId,
-          confirmed: false,
-          retailer: "Amazon",
-          text: `${current.text}\nSource link supplied: ${data.sourceUrl}\nListing details have not been retrieved.`.trim(),
-        }));
-        setMessage(data.message);
-      } else {
-        setVariants(data.variants ?? []);
-        setImportUrl(data.sourceUrl);
-        if (changingVariant) setImages([]);
-        setDraft({
-          ...blank,
-          color: data.color ?? "",
-          size: data.size ?? "",
-          title: data.title,
-          sku: data.productId || "",
-          brand: data.brand,
-          retailer: new URL(data.sourceUrl).hostname,
-          text: `${data.text}\nSource: ${data.sourceUrl}\nRetrieved: ${data.sourceDate}`,
-        });
-        setMessage(
-          "Imported public product text. Confirm the exact color and size before evaluating.",
-        );
-      }
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -451,7 +398,6 @@ export function ShoppingWorkspace({
     setSelected(id);
     setStep(1);
     setDraft(blank);
-    setVariants([]);
     setImages([]);
     setError("");
   }
@@ -572,7 +518,7 @@ export function ShoppingWorkspace({
               <h1>{nav.find((n) => n.id === view)?.label}</h1>
               <p>
                 {view === "check"
-                  ? "Bring the listing. Keep your essentials. See the evidence."
+                  ? "Paste the details. Add photos. Check what matters."
                   : "Your shopping decisions, with the details kept in view."}
               </p>
             </div>
@@ -612,33 +558,7 @@ export function ShoppingWorkspace({
                 <div className="as-two">
                   <section className="as-panel">
                     <h2>What caught your eye?</h2>
-                    <details style={{ marginBottom: 20 }}>
-                      <summary className="as-muted">
-                        Add an Amazon or supported retailer link
-                      </summary>
-                      <label className="as-field">
-                        Public product URL
-                        <input
-                          type="url"
-                          value={importUrl}
-                          onChange={(e) => setImportUrl(e.target.value)}
-                          placeholder="https://…"
-                        />
-                      </label>
-                      <button
-                        className="as-secondary"
-                        disabled={busy || !importUrl}
-                        onClick={() => void importUrlListing()}
-                      >
-                        Import listing
-                      </button>
-                      <p className="as-muted">
-                        Amazon.com product links are supported. If the retailer
-                        blocks access, we save the link and product ID so you
-                        can paste the listing details. Color and size need your
-                        confirmation.
-                      </p>
-                    </details>
+
                     <p className="as-muted">
                       Paste the exact listing. We’ll keep seller statements
                       separate from what remains unknown.
@@ -663,66 +583,20 @@ export function ShoppingWorkspace({
                           {k === "brand" || k === "retailer"
                             ? " (optional)"
                             : ""}
-                          {(k === "color" || k === "size") &&
-                          variants.length > 0 ? (
-                            <select
-                              aria-label={k === "color" ? "Color" : "Size"}
-                              value={draft[k]}
-                              disabled={busy}
-                              onChange={(e) => {
-                                const variant = variants.find(
-                                  (v) =>
-                                    v[k] === e.target.value &&
-                                    (k === "color"
-                                      ? v.size === draft.size
-                                      : v.color === draft.color),
-                                );
-                                if (variant)
-                                  void importUrlListing(
-                                    `https://www.amazon.com/dp/${variant.asin}`,
-                                    true,
-                                  );
-                              }}
-                            >
-                              {[
-                                ...new Set(
-                                  variants
-                                    .filter((v) =>
-                                      k === "color"
-                                        ? v.size === draft.size
-                                        : v.color === draft.color,
-                                    )
-                                    .map((v) => v[k]),
-                                ),
-                              ].map((value) => (
-                                <option key={value} value={value}>
-                                  {value}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              maxLength={80}
-                              value={draft[k]}
-                              onChange={(e) =>
-                                setDraft({
-                                  ...draft,
-                                  [k]: e.target.value,
-                                  confirmed: false,
-                                })
-                              }
-                            />
-                          )}
+                          <input
+                            maxLength={80}
+                            value={draft[k]}
+                            onChange={(e) =>
+                              setDraft({
+                                ...draft,
+                                [k]: e.target.value,
+                                confirmed: false,
+                              })
+                            }
+                          />
                         </label>
                       ))}
                     </div>
-                    {variants.length > 0 && (
-                      <p className="as-muted" role="status">
-                        {busy
-                          ? "Loading the selected Amazon variant…"
-                          : "Colors and sizes come from this Amazon listing. Choices show matching combinations, not a stock guarantee. Changing either reloads its details and clears attached photos; review before confirming."}
-                      </p>
-                    )}
                     <label className="as-field">
                       Listing text
                       <textarea
@@ -1898,9 +1772,7 @@ export function ShoppingWorkspace({
                 setNotes([]);
                 setImages([]);
                 setDraft(blank);
-                setVariants([]);
                 setVersion(1);
-                setImportUrl("");
                 setProfileName("");
                 setArrivalConfirmed(false);
                 setConsent(false);

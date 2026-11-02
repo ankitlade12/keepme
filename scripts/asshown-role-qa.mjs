@@ -92,7 +92,6 @@ try {
         ASSHOWN_MODERATOR_EMAILS: "",
         ASSHOWN_COMMUNITY_ENABLED: "true",
         ASSHOWN_PAID_FEATURES_ENABLED: "true",
-        ASSHOWN_RETAILER_HOSTS: "www.patagonia.com",
         NEXT_TELEMETRY_DISABLED: "1",
       },
       stdio: ["ignore", "pipe", "pipe"],
