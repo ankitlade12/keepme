@@ -1,0 +1,31 @@
+name: Scheduled AsShown removal
+
+on:
+  schedule:
+    # November 25, 2026, 23:59 America/Chicago = November 26, 05:59 UTC.
+    # Later runs retry within a bounded 24-hour window; the script checks the year.
+    - cron: '59 5,6,8,12,18 26 11 *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: asshown-project-removal
+  cancel-in-progress: false
+
+jobs:
+  remove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scheduled deletion or manual read-only credential check
+        env:
+          VERCEL_CLEANUP_TOKEN: ${{ secrets.VERCEL_CLEANUP_TOKEN }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            python3 scripts/delete-asshown-scheduled.py --check
+          else
+            python3 scripts/delete-asshown-scheduled.py
+          fi
