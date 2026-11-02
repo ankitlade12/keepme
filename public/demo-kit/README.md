@@ -27,7 +27,7 @@ The HTML cards are the source documents for the generated screenshot fixtures. N
 4. Keep three requirements: **Machine washable**, **Long sleeves**, **Functional pockets**. Make washing and pockets essential; sleeves can be preferred.
 5. Open **3. Evidence & decision**. Expected: washing and sleeves are supported; functional pockets remain unknown. The image alone must not turn pockets into a supported claim.
 6. Copy the simulated supporting reply from `03-seller-reply.txt` into **Paste the seller’s reply**, then **Add reply as evidence**. Functional pockets should become supported.
-7. Optional: add the conflicting reply. Care should show conflicting evidence. Open **Review and correct source use**, enter the provided reason, and exclude the incorrect reply. The original source must remain visible.
+7. Optional: open **Ask another question or add evidence**, then add the conflicting reply. Care should show conflicting evidence. Open **Review and correct source use**, enter the provided reason, and exclude the incorrect reply. The original source must remain visible.
 
 ## 2. Compare and save
 

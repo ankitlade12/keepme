@@ -10,7 +10,7 @@ export function SourceReview({
 }) {
   const [reason, setReason] = useState("");
   return (
-    <section className="as-panel">
+    <section>
       <details>
         <summary>Review and correct source use</summary>
 

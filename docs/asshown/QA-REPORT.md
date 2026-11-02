@@ -2,6 +2,14 @@
 
 Scope: all 39 M/B/G functional requirements. A passing workflow is not a validated model accuracy claim or a production release approval. This report supersedes historical verification counts in STATUS.md.
 
+## Resolved evidence UX — 2026-11-02
+
+When every current requirement has source support, the seller panel now says “All requirements have source support.” Seller questions and replies collapse under “Ask another question or add evidence.” New conflicting evidence restores the unresolved heading and opens the seller tools. An empty requirement set does not display the completion heading.
+
+Source correction remains available as a compact disclosure rather than a prominent card. It resets closed when the selected product or resolved state changes. Saved source text and correction history remain unchanged. The optional generated question is now an actual variant-confirmation question, not an instruction to the user.
+
+81 tests and the production build pass. Seven local browser scenarios pass, including unknown → supported → conflicting evidence and collapse/reopen behavior. The downloadable demo guide was updated for the optional seller section. Final preview `asshown-emj30287l-ankitlade12-3052s-projects.vercel.app` is READY; all seven hosted browser scenarios passed, including the resolved-state transition and optional variant-confirmation question. Fresh-browser access passed.
+
 ## App copy cleanup and demo kit — 2026-11-01
 
 Removed or shortened more than 40 helper blocks across the shopping workspace, studio, account storage, community, support, OCR, evidence export and footer. Removed the extra advice card and repeated page introductions. Kept field labels, error/status messages, explicit processing/publication consent, source provenance and concise decision limitations.

@@ -154,6 +154,78 @@ try {
       3,
     );
   });
+  await run("resolved-evidence-collapses-optional-controls", async (p) => {
+    await p
+      .getByRole("heading", {
+        name: "Resolve the decisive unknown.",
+        exact: true,
+      })
+      .waitFor();
+    const review = p.getByText("Review and correct source use", {
+      exact: true,
+    });
+    assert.equal(
+      await review.evaluate((n) => n.closest("details").open),
+      false,
+    );
+    await review.click();
+    await p
+      .getByLabel("Paste the seller’s reply", { exact: true })
+      .fill("Functional pockets. Machine wash cold.");
+    await p
+      .getByRole("button", { name: "Add reply as evidence", exact: true })
+      .click();
+    await p
+      .getByRole("heading", {
+        name: "All requirements have source support.",
+        exact: true,
+      })
+      .waitFor();
+    assert.equal(
+      await p
+        .getByRole("heading", {
+          name: "Resolve the decisive unknown.",
+          exact: true,
+        })
+        .count(),
+      0,
+    );
+    assert.equal(
+      await p
+        .getByLabel("Paste the seller’s reply", { exact: true })
+        .isVisible(),
+      false,
+    );
+    assert.equal(
+      await review.evaluate((n) => n.closest("details").open),
+      false,
+    );
+    await p
+      .getByText("Ask another question or add evidence", { exact: true })
+      .click();
+    assert.match(
+      await p.getByLabel(/Editable seller question/).inputValue(),
+      /Rust \/ M/,
+    );
+    await p
+      .getByLabel("Paste the seller’s reply", { exact: true })
+      .fill("Dry-clean only.");
+    await p
+      .getByRole("button", { name: "Add reply as evidence", exact: true })
+      .click();
+    await p
+      .getByRole("heading", {
+        name: "Resolve the decisive unknown.",
+        exact: true,
+      })
+      .waitFor();
+    assert.equal(
+      await p
+        .getByLabel("Paste the seller’s reply", { exact: true })
+        .isVisible(),
+      true,
+    );
+  });
   await run("arrival-mismatch-and-reviewed-export", async (p) => {
     await p.getByRole("button", { name: "Arrival check", exact: true }).click();
     const exportButton = p.getByRole("button", {

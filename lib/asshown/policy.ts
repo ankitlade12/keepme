@@ -278,7 +278,7 @@ export function sellerQuestion(product: Product, findings: Finding[]) {
         f.requirement.importance === "essential" && f.state !== "supported",
     ) ?? findings.find((f) => f.state !== "supported");
   if (!unresolved)
-    return "All current requirements have source support. You can still ask the seller to confirm the exact variant.";
+    return `Hello, could you confirm that the supplied product details apply to ${product.title} (${variant(product)})? Thank you.`;
   return `Hello, I’m considering ${product.title} (${variant(product)}). Could you confirm whether this exact variant meets this requirement: “${unresolved.requirement.wording}”? Please share the relevant care label, construction detail, or a close-up. Thank you.`;
 }
 export function decisionRecord(

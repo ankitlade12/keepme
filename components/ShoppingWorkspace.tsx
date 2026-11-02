@@ -284,6 +284,8 @@ export function ShoppingWorkspace({
     />
   ) : null;
   const findings = product ? evaluate(product, requirements) : [];
+  const allRequirementsSupported =
+    findings.length > 0 && findings.every((f) => f.state === "supported");
   const linkedSources = products
     .flatMap((p) =>
       p.sources.flatMap((s) => (s.communityId ? [s.communityId] : [])),
@@ -919,56 +921,73 @@ export function ShoppingWorkspace({
                       </div>
                       <div>
                         <section className="as-panel">
-                          <span className="as-kicker">
-                            YOUR NEXT BEST QUESTION
-                          </span>
-                          <h2 style={{ marginTop: 12 }}>
-                            Resolve the decisive unknown.
+                          <h2>
+                            {allRequirementsSupported
+                              ? "All requirements have source support."
+                              : findings.length
+                                ? "Resolve the decisive unknown."
+                                : "Add requirements to check this item."}
                           </h2>
-                          <label className="as-field">
-                            Editable seller question
-                            <textarea
-                              value={
-                                question || sellerQuestion(product, findings)
-                              }
-                              onChange={(e) => setQuestion(e.target.value)}
-                            />
-                          </label>
-                          <button
-                            className="as-secondary"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(
-                                  question || sellerQuestion(product, findings),
-                                );
-                                setMessage(
-                                  "Copied. Nothing was sent to the seller.",
-                                );
-                              } catch {
-                                setError(
-                                  "Clipboard unavailable. Select the question text and copy it.",
-                                );
-                              }
-                            }}
+                          <details
+                            key={`${product.id}:${allRequirementsSupported}`}
+                            open={
+                              findings.length > 0 && !allRequirementsSupported
+                            }
                           >
-                            <MessageSquareText size={15} /> Copy question
-                          </button>
-                          <label className="as-field" style={{ marginTop: 25 }}>
-                            Paste the seller’s reply
-                            <textarea
-                              maxLength={12000}
-                              value={reply}
-                              onChange={(e) => setReply(e.target.value)}
-                              placeholder="Replies remain seller-reported evidence."
-                            />
-                          </label>
-                          <button
-                            className="as-secondary"
-                            disabled={!reply.trim()}
-                            onClick={addReply}
-                          >
-                            Add reply as evidence
-                          </button>
+                            <summary>
+                              {allRequirementsSupported
+                                ? "Ask another question or add evidence"
+                                : "Ask the seller"}
+                            </summary>
+                            <label className="as-field">
+                              Editable seller question
+                              <textarea
+                                value={
+                                  question || sellerQuestion(product, findings)
+                                }
+                                onChange={(e) => setQuestion(e.target.value)}
+                              />
+                            </label>
+                            <button
+                              className="as-secondary"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(
+                                    question ||
+                                      sellerQuestion(product, findings),
+                                  );
+                                  setMessage(
+                                    "Copied. Nothing was sent to the seller.",
+                                  );
+                                } catch {
+                                  setError(
+                                    "Clipboard unavailable. Select the question text and copy it.",
+                                  );
+                                }
+                              }}
+                            >
+                              <MessageSquareText size={15} /> Copy question
+                            </button>
+                            <label
+                              className="as-field"
+                              style={{ marginTop: 25 }}
+                            >
+                              Paste the seller’s reply
+                              <textarea
+                                maxLength={12000}
+                                value={reply}
+                                onChange={(e) => setReply(e.target.value)}
+                                placeholder="Replies remain seller-reported evidence."
+                              />
+                            </label>
+                            <button
+                              className="as-secondary"
+                              disabled={!reply.trim()}
+                              onClick={addReply}
+                            >
+                              Add reply as evidence
+                            </button>
+                          </details>
                         </section>
                         <section className="as-panel">
                           <h2>Your next step</h2>
@@ -1193,6 +1212,7 @@ export function ShoppingWorkspace({
           {view === "check" && step === 2 && privateLibrary}
           {view === "check" && step === 2 && product && (
             <SourceReview
+              key={`${product.id}:${allRequirementsSupported}`}
               product={product}
               onChange={(sources) =>
                 setProducts(
