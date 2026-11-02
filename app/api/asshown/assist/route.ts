@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     if (action === "interpret") {
       const { output } = await generateText({
         model: provider.model,
+        providerOptions: { openai: { store: false } },
         maxRetries: 0,
         maxOutputTokens: 1500,
         abortSignal: AbortSignal.timeout(30000),
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
     }
     const { output } = await generateText({
       model: provider.model,
+      providerOptions: { openai: { store: false } },
       maxRetries: 0,
       maxOutputTokens: 2500,
       abortSignal: AbortSignal.timeout(30000),

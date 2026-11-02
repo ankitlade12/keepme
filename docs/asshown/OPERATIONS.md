@@ -27,7 +27,7 @@ Use development Clerk credentials only for `scripts/asshown-account-smoke.mjs` a
 
 ## Remaining release evidence
 
-- Add the project GOOGLE_GENERATIVE_AI_API_KEY in Development/Preview and run real direct-Gemini interpretation, translation, OCR and visual-review checks. Gateway is no longer used by these routes. Manual flows remain usable.
+- OPENAI_API_KEY is configured for Development/Preview. Re-run scripts/asshown-ai-smoke.mjs after provider/model changes to verify direct-OpenAI interpretation, translation, OCR and visual-review flows. Gateway is no longer used by these routes. Manual flows remain usable.
 - Complete the PRD's owned/licensed case set, held-out evaluation and observed user tasks. Record failures and abstentions as well as passes.
 - Verify manual keyboard/screen-reader flows, cleanup monitoring and backup/deletion replay.
 - Set up a public judge-accessible deployment and production authentication configuration before distributing a submission URL. Current previews require Vercel access.

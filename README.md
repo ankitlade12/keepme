@@ -44,8 +44,8 @@ Copy `.env.example` to `.env.local` and fill only the services you intend to ena
 | Account history                         | Clerk publishable/server keys and PostgreSQL                                                                                                                                         |
 | Community moderation                    | `ASSHOWN_MODERATOR_IDS` containing Clerk user IDs or `ASSHOWN_MODERATOR_EMAILS` containing verified Clerk email addresses; `ASSHOWN_COMMUNITY_ENABLED=true` only after launch review |
 | Public retailer import                  | `ASSHOWN_RETAILER_HOSTS` containing exact, explicitly approved hostnames                                                                                                             |
-| Text interpretation/Spanish translation | `GOOGLE_GENERATIVE_AI_API_KEY`, `ASSHOWN_AI_MODEL`                                                                                                                                   |
-| Optional visual observations            | The same Google key and `ASSHOWN_VISION_MODEL` with image/structured-output support                                                                                                  |
+| Text interpretation/Spanish translation | `OPENAI_API_KEY`, `ASSHOWN_AI_MODEL`                                                                                                                                                 |
+| Optional visual observations            | The same OpenAI key and `ASSHOWN_VISION_MODEL` with image/structured-output support                                                                                                  |
 
 Use a separate database from the original KeepMe production app. KeepMe migrations are in `db/migrations` and can be run with `npm run db:migrate`. AsShown’s independent records table is defined in `lib/asshown/records.ts`; production requires PostgreSQL. Single-process development uses an ignored, mode-0600 JSON file under `.asshown-data/`. This local fallback is not a deployment storage strategy.
 
@@ -63,14 +63,14 @@ The live provider version remains pinned to Clothes v3. Configuring a credential
 - Review arrival photos against original product evidence and export a user-reviewed seller-message draft.
 - Prepare public text contributions with explicit content preview/consent, moderation, disputes, appeals, and withdrawal. Optional product-only photos use opaque redaction, screened processing copies, separate consent and explicit moderator image review.
 - Store private originals up to 4 MB with 30-day expiry, renewal, owner-only access and verified deletion. Keep larger originals locally; preview uploads use smaller processing copies.
-- Use optional text translation, reviewed OCR, speech output/input, and image-free support reports. Direct Gemini features require a project Google API key and provider quota; Vercel AI Gateway is not used. Manual text flows remain available.
+- Use optional text translation, reviewed OCR, speech output/input, and image-free support reports. Direct OpenAI features require a project OpenAI API key and provider quota; Vercel AI Gateway is not used. Manual text flows remain available.
 - Moderators can pause new paid processing with an audited reason.
 
 ## Current release status
 
 **This is an implemented local prototype, not a completed all-phase public release.** See [the complete FR01–FR39 matrix](docs/asshown/STATUS.md) for implemented paths, partial coverage, and blocked acceptance criteria. No PRD requirement is silently removed from scope.
 
-YouCam, Clerk, PostgreSQL/private Blob and hosted scanner/integrity services have passed live checks. Optional text/vision/OCR features now use Google Gemini directly; their live verification awaits a project Google API key. See docs/asshown/STATUS.md for detailed evidence and remaining release work.
+YouCam, Clerk, PostgreSQL/private Blob and hosted scanner/integrity services have passed live checks. Optional text/vision/OCR features now use OpenAI directly; all four passed local and hosted live app-route tests with the project OpenAI API key. See docs/asshown/STATUS.md for detailed evidence and remaining release work.
 
 Garment/arrival model observations deliberately remain unvalidated, manual-review suggestions. The PRD’s 30-case demonstration evaluation, five real YouCam calls, larger held-out beta evaluation, participant interviews, moderation staffing, and provider-retention review are outstanding. Commercial prices/plans are unspecified in the PRD and no billing flow is invented.
 
@@ -94,4 +94,4 @@ The checkout is linked to `ankitlade12-3052s-projects/asshown`. A separate Neon 
 
 Arrival check now supports a private evidence package with selected receipt, seller-reply and delivered-item JPEG/PNG attachments. The self-contained HTML download preserves selected original images and can be printed to PDF. Attachments are tab-local, omitted until selected, and require review before export.
 
-Preview: https://asshown-9nffio7hl-ankitlade12-3052s-projects.vercel.app (Vercel authentication required). The hosted synthetic live flow completed generation, integrity assessment, signed receipt and application-image deletion. Production remains unconfigured.
+Preview: https://asshown-k8wsuenzg-ankitlade12-3052s-projects.vercel.app (Vercel authentication required). The hosted synthetic live flow completed generation, integrity assessment, signed receipt and application-image deletion. Production remains unconfigured.

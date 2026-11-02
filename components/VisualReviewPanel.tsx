@@ -140,9 +140,9 @@ export function VisualReviewPanel({
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
         />
-        Send these two images directly to Google Gemini for this visual review.
-        This is separate from YouCam generation. Do not include receipts or
-        personal information.
+        Send these two images directly to OpenAI for this visual review. This is
+        separate from YouCam generation. Do not include receipts or personal
+        information.
       </label>
       <button
         className="as-secondary"

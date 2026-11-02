@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
     ]);
     const { output } = await generateText({
       model: provider.model,
+      providerOptions: { openai: { store: false } },
       maxRetries: 0,
       maxOutputTokens: 2200,
       abortSignal: AbortSignal.timeout(45000),

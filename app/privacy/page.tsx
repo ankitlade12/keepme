@@ -27,10 +27,10 @@ export default function PrivacyPage() {
         <p>
           Optional previews send approved images to Perfect Corp’s YouCam.
           Optional language and visual assistance sends the selected text or
-          images directly to Google Gemini. Each action requires its own
-          consent. Processing-consent metadata is retained for up to 30 days; it
-          contains the purpose and model, not the image or source text. No
-          research reuse or personal-photo publication is enabled.
+          images directly to OpenAI. Each action requires its own consent.
+          Processing-consent metadata is retained for up to 30 days; it contains
+          the purpose and model, not the image or source text. No research reuse
+          or personal-photo publication is enabled.
         </p>
         <h2>Community notes</h2>
         <p>

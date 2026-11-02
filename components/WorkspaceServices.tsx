@@ -814,8 +814,8 @@ export function LanguagePanel({
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
         />
-        Send this text directly to Google Gemini for this request. Keep
-        sensitive personal details out of the text.
+        Send this text directly to OpenAI for this request. Keep sensitive
+        personal details out of the text.
       </label>
       <div className="as-row-actions">
         <button
