@@ -31,6 +31,10 @@ export async function GET(
       hasResultImage: Boolean(session.resultImage),
       provider: session.provider,
       hasGenerationTask: Boolean(session.generationTaskId),
+      submissionUnknown: Boolean(
+        session.generationTaskId?.startsWith("pending:"),
+      ),
+      generationError: session.generationError ?? null,
       contract: session.contract,
       result: session.result,
       allowanceRemaining: Math.max(0, 2 - session.providerTaskCount),

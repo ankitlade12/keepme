@@ -1,193 +1,71 @@
-# Architecture and Integrity Policy
+# Architecture
 
-This document describes KeepMe’s implemented runtime, trust boundaries, integrity decisions, and production-only dependencies. For setup and the product walkthrough, start with the [project README](../README.md).
+AsShown has two connected workflows: source-based shopping decisions and a consent-based appearance preview. Start with the [README](../README.md) for setup and the product story.
 
-## Design Goals
+## Shopping evidence
 
-KeepMe is designed around four rules:
+`components/ShoppingWorkspace.tsx` coordinates listing intake, exact variants, requirements, seller replies, shortlists, saved checks, arrival review, and community notes. `lib/asshown/policy.ts` applies the deterministic evidence policy; language-model output does not control it.
 
-1. The shopper defines the permitted edit before generation.
-2. Protected-region evidence is evaluated before approval.
-3. Critical findings override aggregate scores.
-4. Sensitive artifacts remain session-scoped and are not declared deleted until their absence is verified.
+Sources retain their text, variant, provenance, and inclusion history. Findings distinguish supported statements, conflicts, and unknowns. Essential requirements cannot be offset by preferred ones. Saved reports preserve historical inputs; current findings can change when requirements, variants, sources, or community publication status change.
 
-The system measures visual consistency. It does not perform identity recognition, infer sensitive traits, or certify garment fit.
+`lib/asshown/records.ts` stores owner/category-scoped records and revisions in PostgreSQL. It creates the records table and index on initialization. The local JSON adapter is development-only and refuses production use without a database.
 
-## Runtime Modes
-
-| Mode | Inputs and providers | Persistence | Intended use |
-|---|---|---|---|
-| Guided | Synthetic committed fixtures; no provider call | Ephemeral adapters are allowed | Deterministic demo and CI smoke test |
-| Local live | User-selected images and configured YouCam credentials | Ephemeral or durable adapters | Development against live provider APIs |
-| Production | User-selected images and all configured private services | Postgres and private object storage required | Protected pilot only after every release gate passes |
-
-The guided scenario intentionally removes the synthetic shopper’s glasses. The UI and API label it as a controlled fixture; it is not represented as an accidental live-provider failure.
-
-## System Topology
-
-```mermaid
-graph TB
-    subgraph CLIENT[Browser]
-        STUDIO[Shopper studio]
-        DASH[Retailer dashboard]
-    end
-
-    subgraph WEB[Next.js web service]
-        ROUTES[App Router pages]
-        API[Session and receipt APIs]
-        POLICY[Identity Contract and integrity policy]
-        AUTH[Shopper capability and Clerk tenant authorization]
-        JOBS[Lease-based jobs and maintenance]
-    end
-
-    subgraph DATA[Private data plane]
-        PG[(Postgres)]
-        BLOB[(Private Vercel Blob)]
-    end
-
-    subgraph PROVIDERS[Private external services]
-        CLOTHES[YouCam Clothes v3]
-        SKIN[YouCam Skin Analysis v2.1]
-        VISION[MediaPipe/OpenCV integrity worker]
-        SCANNER[Private ClamAV scanner]
-    end
-
-    STUDIO --> API
-    DASH --> API
-    API --> AUTH
-    API --> POLICY
-    API --> JOBS
-    API --> PG
-    API --> BLOB
-    API --> SCANNER
-    JOBS --> CLOTHES
-    JOBS --> SKIN
-    JOBS --> VISION
-```
-
-On Vercel, [`vercel.json`](../vercel.json) deploys the web app, integrity worker, and ClamAV scanner as separate services. Private bindings inject `INTEGRITY_URL` and `MALWARE_SCAN_URL` into the web service at runtime. The root [`Dockerfile`](../Dockerfile) builds a non-root standalone Next.js image for other platforms.
-
-## Session Lifecycle
+## Preview lifecycle
 
 ```mermaid
 sequenceDiagram
     participant U as Shopper
-    participant W as KeepMe web/API
-    participant P as YouCam
-    participant I as Integrity worker
+    participant A as Next.js API
+    participant Y as YouCam
+    participant W as Integrity worker
     participant S as Private storage
-
-    U->>W: Create private session
-    W-->>U: Opaque session capability
-    U->>W: Approve Identity Contract
-    U->>W: Upload source and garment
-    W->>W: Decode, bound, strip metadata, re-encode, scan
-    W->>S: Store opaque session artifacts
-    W->>P: Create bounded provider task
-    P-->>W: Generated result
-    W->>I: Analyze source/result consistency
-    I-->>W: Alignment, face, and silhouette signals
-    W->>W: Apply calibrated scores and hard rules
-    W-->>U: Result, evidence, and findings
-    U->>W: Repair or approve
-    W-->>U: Signed Integrity Receipt
-    U->>W: Delete session
-    W->>S: Delete all artifacts
-    S-->>W: Confirm absence
-    W-->>U: Deletion confirmed
+    U->>A: Approve Identity Contract
+    U->>A: Upload source and garment
+    A->>A: Validate, prepare processing copies, scan
+    A->>S: Store private session artifacts
+    A->>Y: Check available API units
+    A->>A: Reserve one generation atomically
+    A->>Y: Submit Clothes v3 task
+    Y-->>A: Task identifier and eventual result
+    A->>W: Compare protected appearance regions
+    W-->>A: Signals and uncertainty
+    A-->>U: Findings and eligible repair option
+    U->>A: Review and approve
+    A-->>U: Signed receipt
+    U->>A: Delete session
+    A->>S: Delete artifacts and verify absence
 ```
 
-Guided mode follows the same contract, decision, receipt, and deletion states but uses disclosed fixture artifacts and deterministic verification results.
+Relevant modules: `lib/youcam.ts`, `lib/session-store.ts`, `lib/live-integrity.ts`, `lib/integrity.ts`, `lib/receipt-signing.ts`, and `app/api/v1/sessions/`.
 
-## Component Responsibilities
+A pending reservation is retained if the submission outcome is unknown. Reloads and concurrent clicks do not create another paid task. Known task IDs support polling. HTTP failure status and safe diagnostics are recorded without exposing provider response bodies. The balance guard rejects an empty account before reservation; a positive balance is not a guarantee that every subsequent provider operation can complete.
 
-| Component | Responsibility | Must not do |
-|---|---|---|
-| Studio UI | Collect inputs, contract choices, consent, and final decisions | Receive provider secrets or expose upstream result URLs |
-| Session API | Enforce lifecycle, authorization, rate limits, and response policy | Trust client-supplied tenant ownership |
-| Upload boundary | Decode bytes, enforce JPEG/PNG and size limits, strip metadata, scan | Execute uploaded content or preserve original filenames |
-| Malware scanner | Authenticate requests and inspect reconstructed image bytes with ClamAV | Accept browser traffic directly or treat an unavailable engine as clean |
-| YouCam adapter | Upload, create tasks, poll with bounds, record usage | Start unbounded or duplicate provider work |
-| Integrity engine | Combine measured signals, hard rules, and confidence | Convert unreliable evidence into a pass |
-| Integrity worker | Measure face-landmark and silhouette stability | Recognize identity or persist embeddings |
-| Receipt service | Bind contract/result digests and sign the final record | Include raw image data or provider credentials |
-| Cleanup worker | Claim expiry jobs, delete artifacts, and verify absence | Report success before every configured store confirms deletion |
-| Retailer analytics | Return tenant-scoped, privacy-filtered aggregates | Expose individual shopper images or small cohorts |
+The guided mode uses explicitly disclosed synthetic artifacts and deterministic results. Its glasses-removal/repair scenario exercises the contract and receipt workflow without claiming a fresh live provider result. Live mode uses Clothes v3 and the private worker, with eligible Skin Analysis signals. Inconclusive results remain distinct from passing results.
 
-## Integrity Decision Policy
+## Review, repair, and receipts
 
-The integrity engine produces one of five states:
+Protected-region failures and alignment/quality limits can override aggregate scores. Eligible repair restores a source region and retains the original output separately. A receipt binds decision metadata and digests using HS256; it is not proof of garment suitability or independently validated model accuracy. See the [calibration protocol](../calibration/README.md).
 
-| State | Decision rule |
-|---|---|
-| `inconclusive` | Alignment or input evidence is not reliable enough for a defensible decision |
-| `failed` | A critical preserve-zone or other hard protected-region rule is violated |
-| `needs_review` | A non-critical signal crosses its review threshold |
-| `passed` | No critical finding exists and the calibrated summary passes |
-| `passed_after_repair` | A supported source-zone restoration passes independent reverification |
+OpenAI garment observations are a separate, consented request. `components/VisualReviewPanel.tsx` resets observations and consent when image inputs change and requires human confirmation before a reviewed export. Directly uploaded data URLs are converted to files without a network fetch. Raw model coordinates are not presented as reliable annotations.
 
-Hard rules take precedence over the weighted summary. A high average score cannot hide a critical preserve-zone change. Skin Analysis is a secondary signal: if it is unavailable, confidence is reduced rather than automatically failed.
+## External services
 
-Threshold profiles are versioned. Production thresholds require a governed, consented, independently labeled evaluation dataset; see the [calibration protocol](../calibration/README.md).
+| Service                     | Boundary                                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| YouCam Clothes v3           | Server-side authenticated generation after consent and request-budget checks                        |
+| YouCam Skin Analysis        | Optional eligible appearance signals; no medical conclusion                                         |
+| OpenAI                      | Explicit model selection through `@ai-sdk/openai`; separate language/OCR/vision consent; no Gateway |
+| Integrity worker            | Private FastAPI service using MediaPipe/OpenCV; token authenticated                                 |
+| ClamAV scanner              | Private token-authenticated upload boundary; failure does not become a clean verdict                |
+| Clerk                       | Account identity and moderator/retailer access checks                                               |
+| PostgreSQL and private Blob | Durable metadata, ownership, jobs, and authorized image storage                                     |
 
-## Data Ownership and Isolation
+`vercel.json` binds the two private services to the web service. Scanner requests for larger originals use a short-lived, GET-only private Blob reference with host, size, redirect, and content-hash checks. Processing copies never replace original evidence silently.
 
-- Shopper sessions use an opaque, high-entropy capability stored in an HttpOnly, SameSite=Strict cookie.
-- Retailer access uses Clerk and a stable active-organization or user tenant identifier.
-- Authorization is enforced at each session or tenant data access.
-- Unknown and unauthorized session IDs return the same 404 response shape.
-- Postgres rows carry tenant/session ownership, while object paths are opaque and server-only.
-- The retailer dashboard uses aggregate, privacy-filtered events and suppresses cohorts smaller than the configured minimum.
+## Community and maintenance
 
-See [privacy and data handling](privacy.md) for the artifact lifecycle and [security review](security-review.md) for the threat model.
+Community publication is explicitly gated. Owners submit/correct/withdraw; moderators review, publish, remove, or resolve disputes. Photo publication requires separate consent and an image-review acknowledgment. Current shopping findings stop using unavailable, disputed, withdrawn, or variant-mismatched reports.
 
-## Reliability and Cleanup
+Private assets use quarantine, bounded upload intents, owner-authorized reads, expiry, renewal, and cleanup. Deletion revokes access before retryable physical cleanup. Maintenance processes expiry and cleanup jobs; deployment of a schedule is not proof it runs reliably.
 
-- Provider polling is bounded and guarded by per-session and per-tenant credit limits.
-- Job claims use leases and recover stale work after crashes.
-- Cleanup retries are bounded and preserve failure state for operator review.
-- An authenticated external scheduler can invoke the maintenance route at the cadence required by the session TTL.
-- The included Vercel Cron invokes the same route daily as a fallback; a higher-frequency workflow is an operator responsibility.
-- The health route reports `ok` or `degraded` and distinguishes ephemeral from durable adapters without returning secrets.
-
-Webhook completion is preferred if a provider supports it reliably; the current adapter uses bounded polling.
-
-## Observability
-
-KeepMe registers OpenTelemetry as `keepme-web` and emits structured, privacy-filtered operational events. Events may include category, reason code, duration, counts, session/tenant identifiers, and provider-unit totals. They must not include image bytes, image URLs, original filenames, free-form shopper descriptions, credentials, or inferred identity attributes.
-
-Vercel Web Analytics and Speed Insights observe product navigation and performance only. Sensitive session artifacts are excluded from analytics payloads.
-
-## Implementation Boundary
-
-Implemented in the repository:
-
-- Responsive guided and live studio flows
-- Identity Contract schema, controls, consent, and Preserve Map
-- Five-state integrity engine, hard rules, fixtures, and unit tests
-- YouCam Clothes v3 and Skin Analysis v2.1 server adapters
-- Private result proxy, source-zone repair, and reverification
-- Signed receipt creation, download, and verification
-- Postgres, private object-store, job, event, usage, and rate-limit adapters
-- Ephemeral local fallbacks for the synthetic demo
-- Clerk retailer authentication and tenant isolation
-- Upload decoding, metadata stripping, re-encoding, and private authenticated ClamAV service
-- Private MediaPipe/OpenCV integrity service
-- Cleanup, deletion verification, health checks, CI, and operational configuration
-
-Required before public personal-image traffic:
-
-- Production credentials, quotas, private stores, domain, and monitoring destination
-- Credential rotation, backup/restore testing, deletion drills, and incident ownership
-- Governed calibration data and frozen reviewed thresholds
-- Independent accessibility, penetration, upload-parser, authorization, and tenant-isolation testing
-- Vendor/processor agreements and jurisdiction-specific privacy/legal review
-
-## Related Documentation
-
-- [Project overview and setup](../README.md)
-- [Privacy and data handling](privacy.md)
-- [Security review](security-review.md)
-- [Production runbook](production-runbook.md)
-- [Requirements traceability](requirements-traceability.md)
-- [Calibration protocol](../calibration/README.md)
+See [privacy](privacy.md) for the data lifecycle and [operations](operations.md) for provisioning and release gates.

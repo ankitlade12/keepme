@@ -78,3 +78,15 @@ For a repeatable no-generation alternative, choose the studio’s **guided demo*
 - Guest deletion and studio deletion are separate actions.
 
 A fresh provider generation was not run merely to package these files. Earlier real-provider demo evidence exists in the project’s `artifacts/live-demo` folder.
+
+## Two-minute protection demo
+
+1. Open Studio and choose the controlled identity-drift demo; use **Protect the glasses**.
+2. Approve the disclosed synthetic scenario and run it. The missing glasses are intentional.
+3. Choose **Restore source zone & reverify**. Expect **Controlled checks passed**.
+4. Optional: consent separately to OpenAI garment review. Compare the full-size images, add corrections, and check **I reviewed these observations…** before exporting.
+5. Choose **Approve this result**, download the signed receipt, then **Delete images now**.
+
+Narration: “First I check whether the jacket meets my everyday requirements. Then I preview the look and check whether the edit changed something I wanted to keep. I can review, correct, save the evidence, and delete my images.”
+
+The controlled repair uses disclosed fixtures. Its scores do not prove a fresh live YouCam generation or garment fit. Washing and pocket function remain product-source questions. Live try-on is a separate, provider-dependent run.

@@ -24,6 +24,7 @@ export interface KeepMeSession {
   approved: boolean;
   deletedAt: string | null;
   generationTaskId: string | null;
+  generationError?: string;
   sourceFileId: string | null;
   referenceFileId: string | null;
   sourceImage: ArtifactRef | null;

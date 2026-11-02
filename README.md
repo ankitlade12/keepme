@@ -1,96 +1,312 @@
-# AsShown
+# AsShown — Love the Look. Know the Details.
 
-A clothing-shopping companion built on KeepMe: confirm an exact garment variant, set essential requirements, inspect source-backed findings, compare up to three items, and optionally open a consent-based YouCam preview.
+**Next.js · React · TypeScript · YouCam Clothes v3 · OpenAI · PostgreSQL · Clerk · Vercel**
 
-The interface uses ivory, ink, and violet. No green UI theme. Examples are explicitly labeled illustrative listings and synthetic assets.
+[Product preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) · [CI](https://github.com/ankitlade12/keepme/actions/workflows/ci.yml) · [Architecture](docs/architecture.md) · [Privacy](docs/privacy.md) · [MIT license](LICENSE)
 
-## Run locally
+> **Choose for your everyday needs. Preview the look. Keep what makes you, you.**
 
-```sh
-npm ci
-npm run dev
+AsShown connects clothing discovery with the questions a product photo cannot answer. Shoppers confirm a garment’s exact variant, describe their practical requirements, inspect supporting evidence, and decide what still needs a seller’s answer. An optional YouCam preview explores the look while a separate Identity Contract records which personal features should stay unchanged.
+
+The journey continues after delivery: compare the item with its listing, preserve private evidence, and contribute moderated product notes that can help the next shopper.
+
+**Built for:** the YouCam API Skin AI & eCommerce Hackathon
+
+**Proposed first users:** online clothing shoppers with practical care, fastening, sleeve, or pocket requirements
+
+**Demo mode:** fictional listings and a synthetic shopper; clearly disclosed controlled repair, with separately consented live AI features
+
+## Quick Highlights
+
+- **Requirements first** — essential and preferred needs stay attached to each decision.
+- **Evidence you can inspect** — variant-matched quotes distinguish supported statements, conflicts, and unknowns.
+- **Useful seller questions** — resolve missing details without turning an image into proof.
+- **Shortlists and history** — compare three items, reuse profiles, and export versioned decisions.
+- **YouCam preview studio** — consent-based Clothes v3 generation with protected appearance regions.
+- **Review and repair** — retain the original output, restore an eligible source zone, and inspect the new assessment.
+- **Human-reviewed AI assistance** — requirement suggestions, Spanish translation, OCR, and coarse garment observations.
+- **Arrival and community workflows** — compare delivered items and share moderated, correctable product notes.
+- **Private by design** — separate processing consent, owner-authorized evidence, retention controls, and deletion.
+
+## Live Deployment
+
+| Surface        | Location                                                                                  | Access                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Product        | [Current Vercel preview](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app) | Deployment protection; request a current share link from the project owner |
+| Demo assets    | [Demo kit](public/demo-kit/README.md) · [Download ZIP](public/demo-kit.zip)               | Fictional listings, product images, synthetic shopper, and rehearsal guide |
+| Runtime status | [/api/health](https://asshown-qs6yn2ou9-ankitlade12-3052s-projects.vercel.app/api/health) | Same deployment protection as the application                              |
+| Source         | [GitHub repository](https://github.com/ankitlade12/keepme)                                | This repository retains the original KeepMe name                           |
+| Verification   | [Quality workflow](.github/workflows/ci.yml)                                              | Unit, build, guided-flow, and accessibility checks                         |
+
+**Status checked November 2, 2026:** the preview is deployed. The YouCam account had **zero API units**, so fresh live generation remains unavailable until units are replenished. The application checks the balance before reserving a generation. The controlled repair demo and direct OpenAI garment review have completed the hosted workflow.
+
+A configured integration or healthy web server does not establish available provider quota. Temporary preview links are not a permanent judging-access arrangement. The narrated product video is distributed separately; generated recordings are excluded from Git.
+
+## The Problem
+
+A convincing clothing image leaves everyday questions unanswered:
+
+- Can I machine wash this exact colour and size?
+- Are these working pockets or decorative details?
+- Does the fastening suit my requirements?
+- Did a virtual try-on change my glasses or face as well as my jacket?
+- If the delivered item differs, which listing and evidence should I keep?
+
+AsShown explores this gap between appearance and suitability. Its intended community benefit is clearer, reusable shopping evidence; reduced returns, time savings, and real-user outcomes have not yet been established.
+
+## The Solution
+
+| Question                                              | Source of the answer                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| Does the item meet my requirements?                   | Explicit, variant-matched listing statements and reviewed source evidence |
+| What remains uncertain?                               | Missing statements, conflicts, and an editable seller question            |
+| Do I like the look?                                   | An optional YouCam-generated preview                                      |
+| Did the edit preserve my selected appearance regions? | Separate appearance checks against the Identity Contract                  |
+| What arrived, and what can others learn?              | Reviewed delivery evidence and moderated contributor reports              |
+
+A generated image cannot establish washing instructions, fabric composition, pocket function, comfort, or fit. Seller statements remain seller-reported; community observations remain contributor reports.
+
+## Architecture Overview
+
+### The Shopping Journey
+
+```mermaid
+flowchart LR
+    A[Listing and exact variant] --> B[Essential and preferred requirements]
+    B --> C[Inspect evidence and unknowns]
+    C --> D[Ask seller and review reply]
+    D --> E[Shortlist and saved decision]
+    E --> F[Optional YouCam preview]
+    F --> G[Identity Contract and appearance review]
+    G --> H[Repair or approve and save receipt]
+    E --> I[Arrival review]
+    I --> J[Optional moderated product note]
 ```
 
-Open the Local URL printed by Next.js. `/` is the product introduction, `/check` is the decision workspace, and `/studio` is the inherited preview workflow. No credentials are required for product-text checks or the controlled synthetic preview.
+### System Architecture
+
+```mermaid
+flowchart TB
+    UI[React shopping workspace and studio] --> API[Next.js server routes]
+    API --> POLICY[Variant-aware evidence policy]
+    API --> AUTH[Session capabilities and Clerk]
+    API --> AI[Direct OpenAI assistance]
+    API --> CAM[YouCam Clothes v3 and eligible Skin Analysis]
+    API --> SCAN[Private ClamAV scanner]
+    API --> VERIFY[MediaPipe and OpenCV integrity worker]
+    API --> DB[(PostgreSQL records and jobs)]
+    API --> BLOB[(Private Vercel Blob)]
+    POLICY --> EXPORT[Decision reports and reviewed evidence]
+    VERIFY --> RECEIPT[Signed appearance receipts]
+```
+
+### Tech Stack
+
+| Layer                | Technology                                                        | Purpose                                                                        |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Interface            | Next.js App Router, React, TypeScript                             | Responsive shopping, review, and community workflows                           |
+| Product policy       | TypeScript, Zod                                                   | Bounded requirements, exact variants, provenance, and explicit decision states |
+| Virtual try-on       | YouCam Clothes v3                                                 | Generate the clothing preview after consent                                    |
+| Appearance checks    | Python, FastAPI, MediaPipe, OpenCV; eligible YouCam Skin Analysis | Compare protected regions and expose uncertainty                               |
+| Language and vision  | AI SDK with direct OpenAI provider                                | Reviewed suggestions, translation, OCR, and garment observations               |
+| Identity and storage | Clerk, PostgreSQL, private Vercel Blob                            | Account access, private evidence, moderation, and cleanup                      |
+| Upload safety        | Sharp, private ClamAV service                                     | Image validation, processing copies, and malware scanning                      |
+| Delivery             | Vercel Services, Docker, GitHub Actions                           | Web/API, private workers, builds, and maintenance                              |
+
+See [architecture](docs/architecture.md) for the implementation boundaries.
+
+## Product Features
+
+### Practical Requirements and Source Evidence
+
+Paste listing text, add up to three JPEG/PNG product photos, and confirm the exact variant. Choose up to five requirements covering care, sleeves, pockets, closures, material, price, or custom needs. Essential requirements cannot be outweighed by preferences.
+
+Inspect quoted source spans, add seller replies, and exclude or restore sources with a reason. Variant changes reevaluate current findings while historical reports retain their original inputs. Retailer-link imports, including Amazon scraping, are intentionally removed; intake uses pasted details and uploaded photos.
+
+### Shortlists, Profiles, and Saved Decisions
+
+Compare up to three items, choose a next action, save requirement profiles, and export readable or JSON decision snapshots. Guests have a short restore window; configured account storage supports explicit workspace saves across devices. Product photos held in browser memory do not survive refresh.
+
+### YouCam Preview and Identity Protection
+
+Approve the allowed garment edit and protection choices before provider uploads. The studio supports face geometry, skin appearance, hair, background, glasses, and custom preserve zones. Live results are assessed separately from the shopping evidence.
+
+Unknown submissions remain reserved to prevent duplicate paid tasks. Known jobs can resume status checks. Empty provider balances stop before reservation. Eligible repairs preserve both the original output and the repaired result. Approval produces a signed receipt; its signature attests to the recorded data, not the truth of a product claim.
+
+### Accessible, Human-Reviewed Assistance
+
+Describe needs naturally, use browser dictation, request structured requirement suggestions or Spanish translation, and hear summaries read aloud. Direct OpenAI OCR and visual assistance require separate consent. Suggestions remain editable and cannot satisfy product requirements automatically.
+
+Garment review compares visible neckline, sleeves, and fastening details. Full-size image links support manual inspection; unreliable model-generated coordinate overlays are not shown. Exporting reviewed observations requires an explicit human acknowledgment, which resets when the inputs or notes change.
+
+### Arrival Review and Private Evidence
+
+Record ordered and delivered colour/size, compare delivery photos with the original listing, and prepare a reviewed seller-message package. Selected original images can be included in a self-contained HTML export printable to PDF.
+
+Signed-in shoppers can save private originals up to 10 MB, renew their 30-day retention, or delete them. Uploads pass quarantine and scanning before owner-authorized evidence access. Processing copies remain distinct from originals.
+
+### Community Notes, Moderation, and Support
+
+Contribute item-specific text and optional product-only photos with publication consent. Photo redaction and screening support an explicit moderator review. Reports move through pending, published, disputed, corrected, withdrawn, and removed states; disputed or withdrawn sources stop supporting current findings.
+
+Accountable moderators review contributions, resolve support tickets, and can pause new paid processing with an audited reason. Reputation is not treated as a truth score. Community publication requires configured moderators and an enabled launch gate.
+
+## Judge Quick Start
+
+Use a current preview share link or run locally. The [demo kit](public/demo-kit/README.md) contains all fictional listing text and images.
+
+1. **Check an item:** choose **Explore example**, or paste the rust-jacket listing and upload its photo.
+2. **Set requirements:** keep machine washing and functional pockets essential; review sleeve preferences.
+3. **Follow the evidence:** inspect the quoted washing instruction and the unknown pocket function. Add the kit’s simulated seller reply and observe the updated findings.
+4. **Keep the decision:** shortlist the item and inspect profiles, history, or exports.
+5. **Open the studio:** select **Identity drift demo**, protect the glasses, and approve the explicitly controlled scenario.
+6. **Review and repair:** inspect the missing-glasses finding, then choose **Restore source zone & reverify**.
+7. **Review garment details:** optionally consent to OpenAI assistance, inspect both images, add corrections, and acknowledge review before export.
+8. **Finish:** approve the result, download the signed receipt, and choose **Delete images now**. Explore **Arrival check**, **Product notes**, and **Privacy & data** separately.
+
+The controlled scenario deliberately demonstrates an appearance change and repair. It uses synthetic fixtures and makes no live YouCam generation request. Live mode requires available API units and the configured image services; use the actual returned result rather than assume a pass.
+
+## Local Installation
+
+Requirements: Node.js 22 and npm. The optional Python services use their supplied Dockerfiles.
+
+```sh
+git clone https://github.com/ankitlade12/keepme.git
+cd keepme
+git checkout feat/asshown-community-mvp
+npm ci
+cp .env.example .env.local
+npm run dev -- --hostname localhost --port 3001
+```
+
+Open http://localhost:3001. Product-text checks and the controlled studio demonstration do not require provider credentials. Use `localhost` with Clerk enabled. The development-only file/in-memory adapters are not deployment storage.
+
+## Configuration
+
+Configure only the capabilities you intend to use. Keep credential values in local ignored environment files or host secrets.
+
+| Variable                                                             | Purpose                                                          |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `YOUCAM_API_KEY`                                                     | Server-side YouCam access; available API units are also required |
+| `YOUCAM_API_BASE_URL`                                                | Defaults to the configured YouCam API host                       |
+| `OPENAI_API_KEY`                                                     | Direct OpenAI access; no Vercel AI Gateway is used               |
+| `ASSHOWN_AI_MODEL` / `ASSHOWN_VISION_MODEL`                          | Explicit model selection, such as `gpt-4.1-mini`                 |
+| `DATABASE_URL`                                                       | PostgreSQL metadata, durable requests, and account records       |
+| `BLOB_READ_WRITE_TOKEN`                                              | Private artifact and evidence storage                            |
+| Clerk publishable/server keys                                        | Sign-in and account ownership                                    |
+| `RECEIPT_SIGNING_SECRET` / `CRON_SECRET`                             | Receipt signatures and authenticated maintenance                 |
+| `MALWARE_SCAN_URL` / `MALWARE_SCAN_TOKEN`                            | Authenticated private upload scanner                             |
+| `INTEGRITY_WORKER_URL` or `INTEGRITY_URL` / `INTEGRITY_WORKER_TOKEN` | Private appearance-analysis worker                               |
+| `SESSION_TTL_MINUTES`                                                | Temporary studio session lifetime; default 30 minutes            |
+| `MAX_PROVIDER_TASKS_PER_SESSION`                                     | At most two paid tasks per session                               |
+| `MAX_PROVIDER_TASKS_PER_HOUR` / `MAX_PROVIDER_TASKS_PER_DAY`         | Provider request budgets                                         |
+| `MAX_ACCOUNT_GENERATIONS_PER_DAY`                                    | Additional daily generation limit                                |
+| `ASSHOWN_COMMUNITY_ENABLED`                                          | Community publication gate                                       |
+| `ASSHOWN_MODERATOR_IDS` / `ASSHOWN_MODERATOR_EMAILS`                 | Authorized moderators; emails must be verified                   |
+| `ASSHOWN_PAID_FEATURES_ENABLED`                                      | Stops new paid processing when false                             |
+| `RETAILER_EMAIL_ALLOWLIST`                                           | Access to the inherited retailer dashboard                       |
+
+See [.env.example](.env.example) and [operations](docs/operations.md) for deployment configuration.
+
+## Verification
 
 ```sh
 npm test
 npx tsc --noEmit
+npm run lint
 npm run build
-```
 
-With a dev server on port 3001:
-
-```sh
-npm run test:asshown:api
-npm run test:asshown:browser
-npm run test:asshown:a11y
+# Install Chromium once; run with the dev server on port 3001.
+npx playwright install chromium
+node scripts/asshown-full-browser-qa.mjs
+node scripts/asshown-demo-kit-smoke.mjs
 KEEPME_URL=http://localhost:3001 npm run smoke:guided
 ```
 
-Browser checks require the Playwright Chromium executable. In this workspace it was downloaded to `/private/tmp/asshown-browsers`; set `PLAYWRIGHT_BROWSERS_PATH` to that directory. Screenshots are saved under ignored `artifacts/`.
+Verified November 2, 2026: **87 application tests passed**, TypeScript passed, and the preview production build succeeded. Seven shopping-workspace scenarios and the hosted listing-to-repair-to-receipt journey passed. The latter included a real OpenAI review, human-confirmed export, mobile layout, and deleted-image access checks. Lint has warnings but no errors.
 
-## Configuration
+A fresh live YouCam attempt was rejected while the account had zero units. The subsequent empty-balance check returned HTTP 402 with **zero reserved provider tasks**. Earlier live successes do not establish present availability or evaluated accuracy.
 
-Copy `.env.example` to `.env.local` and fill only the services you intend to enable. Keep secrets server-only and out of Git. Empty optional entries are ignored.
+Opt-in provider checks spend requests and use synthetic assets:
 
-| Capability                              | Configuration                                                                                                                                                                        |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Live YouCam Clothes v3                  | `YOUCAM_API_KEY`; optional `YOUCAM_API_BASE_URL`                                                                                                                                     |
-| Durable preview sessions                | Separate development/staging `DATABASE_URL`, migrations, private `BLOB_READ_WRITE_TOKEN`                                                                                             |
-| Production upload safety                | `MALWARE_SCAN_URL`, `MALWARE_SCAN_TOKEN`                                                                                                                                             |
-| Appearance integrity                    | `INTEGRITY_WORKER_URL` or service binding `INTEGRITY_URL`, `INTEGRITY_WORKER_TOKEN`                                                                                                  |
-| Signed preview receipts and cleanup     | `RECEIPT_SIGNING_SECRET`, `CRON_SECRET`                                                                                                                                              |
-| Account history                         | Clerk publishable/server keys and PostgreSQL                                                                                                                                         |
-| Community moderation                    | `ASSHOWN_MODERATOR_IDS` containing Clerk user IDs or `ASSHOWN_MODERATOR_EMAILS` containing verified Clerk email addresses; `ASSHOWN_COMMUNITY_ENABLED=true` only after launch review |
-| Text interpretation/Spanish translation | `OPENAI_API_KEY`, `ASSHOWN_AI_MODEL`                                                                                                                                                 |
-| Optional visual observations            | The same OpenAI key and `ASSHOWN_VISION_MODEL` with image/structured-output support                                                                                                  |
+```sh
+# Real YouCam generation; requires configured services and provider quota.
+KEEPME_URL=https://your-preview.example node --env-file=.env.local scripts/live-flow-smoke.mjs
 
-Use a separate database from the original KeepMe production app. KeepMe migrations are in `db/migrations` and can be run with `npm run db:migrate`. AsShown’s independent records table is defined in `lib/asshown/records.ts`; production requires PostgreSQL. Single-process development uses an ignored, mode-0600 JSON file under `.asshown-data/`. This local fallback is not a deployment storage strategy.
+# Complete browser journey; LIVE_REVIEW=1 enables a real OpenAI review.
+ASSHOWN_URL=http://localhost:3001 LIVE_REVIEW=1 node scripts/studio-review-e2e.mjs
+```
 
-The live provider version remains pinned to Clothes v3. Configuring a credential does not establish successful live verification. Do not use the controlled fixture as a live YouCam result.
+Generated reports, recordings, local credentials, and account data remain ignored. Automated browser checks are not human accessibility certification or a held-out model evaluation.
 
-## Product flows
+## Repository Structure
 
-- Import up to three JPEG/PNG product images and paste listing text; confirm variant.
-- Set up to five essential/preferred requirements, including care, sleeves, functional pockets, closures, material, price, or custom needs.
-- Inspect exact source spans, unknowns, conflicts, and seller-reported replies. Essentials cannot be outweighed by preferences.
-- Compare up to three items, choose a next action, and export readable/JSON decision snapshots.
-- Save/rename/update session profiles and explicitly save or load a server workspace. Account persistence requires configured authentication.
-- Enter the YouCam studio with the selected garment when live mode is configured. Consent precedes provider uploads. Refresh resumes an existing task; ambiguous submissions are not blindly retried.
-- Review separate appearance and garment observations. Unsupported/occluded or unvalidated checks cannot pass. Repairs preserve a separate original output.
-- Review arrival photos against original product evidence and export a user-reviewed seller-message draft.
-- Prepare public text contributions with explicit content preview/consent, moderation, disputes, appeals, and withdrawal. Optional product-only photos use opaque redaction, screened processing copies, separate consent and explicit moderator image review.
-- Store private originals up to 10 MB through direct private uploads, with 30-day expiry, renewal, owner-only access and verified deletion. Preview uploads use smaller processing copies.
-- Use optional text translation, reviewed OCR, speech output/input, and image-free support reports. Direct OpenAI features require a project OpenAI API key and provider quota; Vercel AI Gateway is not used. Manual text flows remain available.
-- Moderators can pause new paid processing with an audited reason.
+```text
+keepme/
+├── app/                         # Product pages, styles, and server routes
+├── components/                  # Shopping workspace, studio, and review UI
+├── lib/asshown/                  # Requirements, evidence, accounts, and community
+├── lib/                         # Sessions, YouCam, integrity, receipts, and storage
+├── services/
+│   ├── integrity-worker/        # FastAPI, MediaPipe, and OpenCV
+│   └── malware-scanner/         # Private ClamAV upload boundary
+├── db/migrations/               # Durable session and job schema
+├── public/demo/                 # Disclosed synthetic studio assets
+├── public/demo-kit/             # Product-demo inputs and walkthrough
+├── calibration/                 # Evaluation protocol and threshold tooling
+├── scripts/                     # Smoke, browser, and operational checks
+├── docs/                        # Architecture, privacy, and operations
+├── .github/workflows/           # Quality and maintenance automation
+├── Dockerfile
+├── vercel.json
+└── .env.example
+```
 
-## Current release status
+## Deployment
 
-**This is an implemented local prototype, not a completed all-phase public release.** See [the complete FR01–FR39 matrix](docs/asshown/STATUS.md) for implemented paths, partial coverage, and blocked acceptance criteria. No PRD requirement is silently removed from scope.
+[vercel.json](vercel.json) defines the Next.js web app, private integrity worker, and private scanner. The root [Dockerfile](Dockerfile) provides a standalone web image for other hosting environments; it does not provision those dependencies.
 
-YouCam, Clerk, PostgreSQL/private Blob and hosted scanner/integrity services have passed live checks. Optional text/vision/OCR features now use OpenAI directly; all four passed local and hosted live app-route tests with the project OpenAI API key. See docs/asshown/STATUS.md for detailed evidence and remaining release work.
+1. Provision an isolated PostgreSQL database, private Blob store, and appropriate Clerk environment.
+2. Apply session migrations with `npm run db:migrate`; provision the AsShown records table using the initialization described in [operations](docs/operations.md).
+3. Configure server secrets and private service bindings. Keep `KEEPME_ALLOW_EPHEMERAL=false` and `KEEPME_AUTO_MIGRATE=false` for deployed operation.
+4. Deploy a preview, verify the controlled journey and cleanup, then explicitly verify live provider availability.
+5. Configure monitored maintenance and a stable judge-access arrangement before submission or public rollout.
 
-Garment/arrival model observations deliberately remain unvalidated, manual-review suggestions. The PRD’s 30-case demonstration evaluation, five real YouCam calls, larger held-out beta evaluation, participant interviews, moderation staffing, and provider-retention review are outstanding. Commercial prices/plans are unspecified in the PRD and no billing flow is invented.
+Provider calls, hosting, and storage can incur costs. The current preview is not an approved production launch.
 
-## Evidence and privacy
+## API Surface
 
-The deterministic policy accepts only recognized explicit text statements. It does not claim comprehensive NLP/OCR extraction. Unknown phrases stay unknown. Optional language interpretation creates user-reviewed suggestions and never controls the decision policy.
+| Route                                               | Purpose                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `/api/asshown/workspace`                            | Guest/account state and explicit saved workspaces                |
+| `/api/asshown/assist`, `/extract`, `/vision`        | Consented language, OCR, and visual suggestions                  |
+| `/api/asshown/assets` and upload routes             | Owner-authorized private evidence                                |
+| `/api/asshown/community` and community-media routes | Contributions, moderation, and publication lifecycle             |
+| `/api/asshown/support`, `/operations`               | Support and audited processing controls                          |
+| `/api/v1/sessions`                                  | Private preview session lifecycle                                |
+| `/api/v1/sessions/[id]/[action]`                    | Contract, generation, status, verification, repair, and approval |
+| `/api/v1/receipts/verify`                           | Signed receipt verification                                      |
+| `/api/internal/maintenance`                         | Authenticated expiry and deletion work                           |
+| `/api/health`                                       | Runtime dependency status; not a provider-quota guarantee        |
 
-Guest browser state has a 30-minute restore window; uploaded product images are omitted after refresh. Explicit account saves omit images. Preview images use separate authorized routes. Application deletion and provider retention are reported separately. A signature attests to a record, not the truth of its findings. Analytics are disabled by default.
+The retired retailer import endpoint returns HTTP 410 and makes no outbound product requests.
 
-## KeepMe baseline and substantial changes
+## Privacy and Decision Boundaries
 
-Baseline: `ankitlade12/keepme` commit `2c4053db1c5b3144be29340f57a5419824db4b96` (MIT). The original project documentation is retained in [KEEPME_BASELINE_README.md](docs/asshown/KEEPME_BASELINE_README.md).
+Guest restore lasts 30 minutes and excludes uploaded photos after refresh. Account evidence has separate retention and renewal. Application deletion and downstream provider retention are separate obligations. Publication, storage, and model processing have separate consent gates.
 
-AsShown adds the requirement/evidence policy, variant-aware sources, seller questions/replies, shortlist comparison, account workspace storage, profiles/history, community moderation, arrival review, language assistance, support, and a new responsive UI. It also strengthens consent, generation reservation, refresh recovery, deletion behavior, repair lineage, and unchecked-verifier behavior in the inherited preview implementation.
+Neither an appearance score nor a signed receipt establishes fit, comfort, fabric properties, pocket function, medical suitability, or seller honesty. Unknown and conflicting evidence stays visible. See [privacy and provenance](docs/privacy.md).
 
-Submission materials and remaining launch work are in [SUBMISSION.md](docs/asshown/SUBMISSION.md). Keep the MIT license and third-party notices when redistributing.
+## Project Origins and Next Steps
 
-## Fresh development environment
+AsShown builds on the MIT-licensed KeepMe baseline, commit [`2c4053d`](https://github.com/ankitlade12/keepme/tree/2c4053db1c5b3144be29340f57a5419824db4b96). The original project is preserved in Git history.
 
-The checkout is linked to `ankitlade12-3052s-projects/asshown`. A separate Neon free-plan database, private Blob store and Clerk Hobby instance are connected to Development and Preview. The initial database migration has been applied. Configuration is stored in Vercel and the ignored `.env.local`; no credential values belong in this repository. Use `localhost` when starting Next with Clerk enabled (`npm run dev -- --hostname localhost --port 3001`); binding to `127.0.0.1` can make the SDK’s normalized localhost rewrite loop.
+The hackathon expansion adds variant-aware shopping evidence, requirements, seller replies, shortlists, account workspaces, profiles, community moderation, arrival review, language assistance, support, and the responsive AsShown interface. It also strengthens consent, duplicate-task prevention, repair lineage, and deletion behavior.
 
-Arrival check now supports a private evidence package with selected receipt, seller-reply and delivered-item JPEG/PNG attachments. The self-contained HTML download preserves selected original images and can be printed to PDF. Attachments are tab-local, omitted until selected, and require review before export.
+Before a public launch, complete owned/licensed case evaluation, independent human review, user interviews, manual accessibility work, moderator staffing, provider-retention review, and backup/cleanup incident drills. No evaluated accuracy, reduced-return benefit, or commercial outcome is claimed. Subscription billing is not implemented.
 
-Preview: https://asshown-k8wsuenzg-ankitlade12-3052s-projects.vercel.app (Vercel authentication required). The hosted synthetic live flow completed generation, integrity assessment, signed receipt and application-image deletion. Production remains unconfigured.
+## License
+
+[MIT](LICENSE) © 2026 Ankit Lade.
+
+_Check the evidence. Preview the look. Keep your choice._

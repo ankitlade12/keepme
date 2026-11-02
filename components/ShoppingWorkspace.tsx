@@ -1048,7 +1048,7 @@ export function ShoppingWorkspace({
                     </p>
                     <p className="as-notice">
                       {liveAvailable
-                        ? "Live YouCam preview available."
+                        ? "Live preview requires available YouCam API units."
                         : "Live preview unavailable. A synthetic demo is available."}
                     </p>
                     <button

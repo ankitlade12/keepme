@@ -8,8 +8,10 @@ import { repairZone, verifyLiveResult } from "@/lib/live-integrity";
 import { updateSession, reserveGeneration } from "@/lib/session-store";
 import {
   createClothesTask,
+  assertYouCamUnitsAvailable,
   getClothesTask,
   YouCamConfigurationError,
+  YouCamRequestError,
 } from "@/lib/youcam";
 import { authorizedSession } from "@/lib/session-auth";
 import { deleteArtifacts, putArtifact, readArtifact } from "@/lib/object-store";
@@ -203,6 +205,19 @@ export async function POST(
         { error: "This session reached its live-generation credit limit." },
         { status: 429 },
       );
+    try {
+      await assertYouCamUnitsAvailable();
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof YouCamConfigurationError
+              ? error.message
+              : "YouCam availability could not be checked. No generation was submitted.",
+        },
+        { status: error instanceof YouCamConfigurationError ? 402 : 503 },
+      );
+    }
     const budget = await consumeRateLimit(
       `provider:${session.tenantId}`,
       serverConfig.MAX_PROVIDER_TASKS_PER_HOUR,
@@ -267,6 +282,23 @@ export async function POST(
         { status: 202 },
       );
     } catch (error) {
+      const message =
+        error instanceof YouCamConfigurationError ||
+        error instanceof YouCamRequestError
+          ? error.message
+          : "We could not confirm whether YouCam accepted this request. Generation is paused to avoid a duplicate charge. Contact support with your session ID.";
+      // Keep the reservation: an interrupted response may still represent a paid task.
+      await updateSession(id, { generationError: message });
+      await recordEvent(session.tenantId, id, "provider", "submission_failed", {
+        failureKind:
+          error instanceof YouCamRequestError
+            ? "http_response"
+            : error instanceof YouCamConfigurationError
+              ? "configuration"
+              : "unknown",
+        httpStatus:
+          error instanceof YouCamRequestError ? error.status : undefined,
+      });
       await recordProviderUsage({
         tenantId: session.tenantId,
         sessionId: id,
@@ -275,11 +307,10 @@ export async function POST(
         status: "failed_to_start",
         latencyMs: Date.now() - startedAt,
       });
-      const message =
-        error instanceof YouCamConfigurationError
-          ? error.message
-          : "Provider submission outcome is unknown. No automatic resubmission will occur. Check provider history before starting another session.";
-      return NextResponse.json({ error: message }, { status: 502 });
+      return NextResponse.json(
+        { error: message, taskStatus: "submission_unknown" },
+        { status: 502 },
+      );
     }
   }
 
@@ -546,7 +577,8 @@ export async function GET(
       return NextResponse.json({
         taskStatus: "submission_unknown",
         error:
-          "Submission outcome is unknown. Reconcile in the provider console; this request will not be resubmitted.",
+          session.generationError ??
+          "We could not confirm whether YouCam accepted this request. Generation is paused to avoid a duplicate charge. Contact support with your session ID.",
       });
     if (session.generationTaskId.startsWith("demo_")) {
       await updateSession(id, { stage: "verifying" });

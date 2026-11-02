@@ -1,8 +1,58 @@
 "use client";
 import { useEffect, useState } from "react";
-import { processingImage } from "@/lib/asshown/client-image";
+import { processingImage, dataImageFile } from "@/lib/asshown/client-image";
 import { assessObservation } from "@/lib/asshown/vision";
-export function VisualReviewPanel({
+type ReviewProps = {
+  source?: string;
+  initialResult?: string;
+  kind: "preview" | "arrival";
+};
+export function VisualReviewPanel(props: ReviewProps) {
+  return (
+    <ReviewContent
+      key={`${props.kind}:${props.source}:${props.initialResult}`}
+      {...props}
+    />
+  );
+}
+
+function ReviewImage({ src, alt }: { src: string; alt: string }) {
+  return (
+    <a
+      href={src}
+      onClick={(event) => {
+        if (!src.startsWith("data:")) return;
+        event.preventDefault();
+        const url = URL.createObjectURL(dataImageFile(src, "product-photo"));
+        window.open(url, "_blank", "noopener,noreferrer");
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Open full-size ${alt.toLowerCase()}`}
+      style={{ display: "block", textAlign: "center" }}
+    >
+      <img
+        src={src}
+        alt={alt}
+        style={{
+          display: "inline-block",
+          maxHeight: 300,
+          maxWidth: "100%",
+          width: "auto",
+          height: "auto",
+        }}
+      />
+    </a>
+  );
+}
+const attributeLabels = {
+  neckline: "Collar and neckline",
+  sleeves: "Sleeves",
+  "large closure": "Buttons and fastenings",
+};
+
+function ReviewContent({
   source,
   initialResult,
   kind,
@@ -19,7 +69,8 @@ export function VisualReviewPanel({
     [observations, setObservations] = useState<
       Array<ReturnType<typeof assessObservation>>
     >([]),
-    [corrections, setCorrections] = useState("");
+    [corrections, setCorrections] = useState(""),
+    [reviewed, setReviewed] = useState(false);
   useEffect(
     () => () => {
       if (target.startsWith("blob:")) URL.revokeObjectURL(target);
@@ -29,23 +80,25 @@ export function VisualReviewPanel({
   async function inspect() {
     if (!source || !target) return;
     setBusy(true);
+    setReviewed(false);
+    setObservations([]);
+    setMessage("");
     try {
-      const [a, b] = await Promise.all([fetch(source), fetch(target)]);
-      if (!a.ok || !b.ok) throw new Error("An image expired. Select it again.");
+      async function imageFile(url: string, name: string) {
+        if (url.startsWith("data:")) return dataImageFile(url, name);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("An image expired. Select it again.");
+        return new File([await response.blob()], name, {
+          type: response.headers.get("content-type") ?? "image/jpeg",
+        });
+      }
+      const [a, b] = await Promise.all([
+        imageFile(source, "source.jpg"),
+        file ?? imageFile(target, "result.jpg"),
+      ]);
       const form = new FormData();
-      form.append(
-        "source",
-        new File([await a.blob()], "source.jpg", {
-          type: a.headers.get("content-type") ?? "image/jpeg",
-        }),
-      );
-      form.append(
-        "result",
-        file ??
-          new File([await b.blob()], "result.jpg", {
-            type: b.headers.get("content-type") ?? "image/jpeg",
-          }),
-      );
+      form.append("source", a);
+      form.append("result", b);
       for (const key of ["source", "result"])
         form.set(key, await processingImage(form.get(key) as File));
       form.append("kind", kind);
@@ -79,11 +132,7 @@ export function VisualReviewPanel({
       <div className="as-form-grid">
         <div>
           {source ? (
-            <img
-              src={source}
-              style={{ height: 230, width: "100%", objectFit: "contain" }}
-              alt="Original product evidence"
-            />
+            <ReviewImage src={source} alt="Original product evidence" />
           ) : (
             <p className="as-notice">Add an original product photo first.</p>
           )}
@@ -91,9 +140,8 @@ export function VisualReviewPanel({
         </div>
         <div>
           {target && (
-            <img
+            <ReviewImage
               src={target}
-              style={{ height: 230, width: "100%", objectFit: "contain" }}
               alt={
                 kind === "arrival"
                   ? "Delivered item for comparison"
@@ -114,6 +162,7 @@ export function VisualReviewPanel({
           <input
             type="file"
             accept="image/png,image/jpeg"
+            disabled={busy}
             onChange={(e) => {
               const next = e.target.files?.[0];
               if (
@@ -128,6 +177,9 @@ export function VisualReviewPanel({
               setTarget(next ? URL.createObjectURL(next) : "");
               setConsent(false);
               setObservations([]);
+              setReviewed(false);
+              setCorrections("");
+              setMessage("");
             }}
           />
         </label>
@@ -138,9 +190,7 @@ export function VisualReviewPanel({
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
         />
-        Send these two images directly to OpenAI for this visual review. This is
-        separate from YouCam generation. Do not include receipts or personal
-        information.
+        Send these two images to OpenAI for garment review.
       </label>
       <button
         className="as-secondary"
@@ -151,20 +201,32 @@ export function VisualReviewPanel({
           ? "Inspecting visible details…"
           : "Suggest visible garment observations"}
       </button>
+      {observations.length > 0 && (
+        <p className="as-muted">
+          Open either image at full size to compare the details.
+        </p>
+      )}
       {observations.map((o, i) => (
         <article className="as-evidence" key={i}>
-          <h3>
-            {o.attribute} · {o.status}
-          </h3>
-          <p>Source: {o.sourceDescription}</p>
-          <p>Comparison: {o.resultDescription}</p>
-          <p>{o.limitation}</p>
-          <small>
-            Source region:{" "}
-            {o.sourceRegion ? JSON.stringify(o.sourceRegion) : "not located"} ·
-            Comparison region:{" "}
-            {o.resultRegion ? JSON.stringify(o.resultRegion) : "not located"}
-          </small>
+          <h3>{attributeLabels[o.attribute]}</h3>
+          <p>
+            <strong>
+              {o.status === "unassessable"
+                ? "Not clearly visible"
+                : o.possibleDifference
+                  ? "Possible difference — review visually"
+                  : "Review visually"}
+            </strong>
+          </p>
+          <p>Product: {o.sourceDescription}</p>
+          <p>
+            {kind === "arrival" ? "Delivered item" : "Preview"}:{" "}
+            {o.resultDescription}
+          </p>
+          <details>
+            <summary>Uncertainty</summary>
+            <p>{o.limitation}</p>
+          </details>
         </article>
       ))}
       {message && (
@@ -177,14 +239,30 @@ export function VisualReviewPanel({
         <textarea
           value={corrections}
           maxLength={2000}
-          onChange={(e) => setCorrections(e.target.value)}
+          onChange={(e) => {
+            setCorrections(e.target.value);
+            setReviewed(false);
+          }}
           placeholder="Describe what you can actually see. These notes are yours, not an automated finding."
         />
       </label>
+      <label className="as-checkbox">
+        <input
+          type="checkbox"
+          checked={reviewed}
+          disabled={busy || (!corrections.trim() && !observations.length)}
+          onChange={(e) => setReviewed(e.target.checked)}
+        />
+        I reviewed these observations against both images and added any
+        corrections.
+      </label>
       <button
         className="as-secondary"
-        disabled={!corrections.trim() && !observations.length}
+        disabled={
+          busy || !reviewed || (!corrections.trim() && !observations.length)
+        }
         onClick={() => {
+          if (!reviewed || busy) return;
           const url = URL.createObjectURL(
             new Blob(
               [
@@ -197,6 +275,7 @@ export function VisualReviewPanel({
                     observations,
                     corrections,
                     automatedVerification: "not validated",
+                    humanReviewConfirmed: true,
                     date: new Date().toISOString(),
                   },
                   null,

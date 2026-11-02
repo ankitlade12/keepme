@@ -7,6 +7,14 @@ type UploadKind = "cloth-v3" | "skin-analysis";
 
 export class YouCamConfigurationError extends Error {}
 
+export class YouCamRequestError extends Error {
+  constructor(readonly status: number) {
+    super(
+      `YouCam returned HTTP ${status}. This request is stopped; no automatic retry will occur.`,
+    );
+  }
+}
+
 function authHeaders() {
   const apiKey = process.env.YOUCAM_API_KEY;
   if (!apiKey)
@@ -19,7 +27,7 @@ function authHeaders() {
 
 async function youCamRequest<T>(path: string, init?: RequestInit): Promise<T> {
   if (init?.method === "POST" && !(await paidFeaturesEnabled()))
-    throw new Error(
+    throw new YouCamConfigurationError(
       "AI processing is temporarily paused. Your saved evidence remains available.",
     );
   if (init?.method === "POST" && path.includes("/task/")) {
@@ -29,7 +37,7 @@ async function youCamRequest<T>(path: string, init?: RequestInit): Promise<T> {
       86400,
     );
     if (!budget.allowed)
-      throw new Error(
+      throw new YouCamConfigurationError(
         "The project's daily provider allowance has been reached.",
       );
   }
@@ -39,8 +47,7 @@ async function youCamRequest<T>(path: string, init?: RequestInit): Promise<T> {
     cache: "no-store",
     signal: AbortSignal.timeout(30000),
   });
-  if (!response.ok)
-    throw new Error(`YouCam request failed with status ${response.status}`);
+  if (!response.ok) throw new YouCamRequestError(response.status);
   return response.json() as Promise<T>;
 }
 
@@ -113,6 +120,30 @@ export async function uploadToYouCam(
   if (!response.ok)
     throw new Error(`YouCam upload failed with status ${response.status}`);
   return uploadedFile.file_id;
+}
+
+export async function assertYouCamUnitsAvailable() {
+  const balance = await youCamRequest<{
+    results: Array<{ amount: number; expiry: number }>;
+  }>("/s2s/v1.0/client/credit");
+  if (
+    !Array.isArray(balance.results) ||
+    balance.results.some(
+      (entry) =>
+        !Number.isFinite(entry.amount) || !Number.isFinite(entry.expiry),
+    )
+  ) {
+    throw new YouCamConfigurationError(
+      "YouCam unit availability could not be checked. No generation was submitted.",
+    );
+  }
+  const units = balance.results
+    .filter((entry) => entry.expiry > Date.now())
+    .reduce((total, entry) => total + entry.amount, 0);
+  if (units <= 0)
+    throw new YouCamConfigurationError(
+      "Live try-on is unavailable because the YouCam account has no API units remaining. Add units in the YouCam console, then try again. The controlled demo is available.",
+    );
 }
 
 export async function createClothesTask(

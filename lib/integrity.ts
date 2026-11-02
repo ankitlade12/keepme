@@ -1,4 +1,9 @@
-import type { IntegrityComponent, IntegrityFinding, IntegrityResult, ResultState } from "./types";
+import type {
+  IntegrityComponent,
+  IntegrityFinding,
+  IntegrityResult,
+  ResultState,
+} from "./types";
 
 export interface IntegritySignals {
   garmentFidelity: number;
@@ -40,8 +45,14 @@ export function scoreIntegrity(signals: IntegritySignals): number {
 }
 
 export function decideState(signals: IntegritySignals): ResultState {
-  if (signals.alignmentReliable === false || signals.qualityConfidence < 0.55) return "inconclusive";
-  if (signals.garmentFidelity < 0.35 || signals.criticalZoneFailed || signals.preserveZone < PRESERVE_ZONE_FAIL_THRESHOLD) return "failed";
+  if (signals.alignmentReliable === false || signals.qualityConfidence < 0.55)
+    return "inconclusive";
+  if (
+    signals.garmentFidelity < 0.35 ||
+    signals.criticalZoneFailed ||
+    signals.preserveZone < PRESERVE_ZONE_FAIL_THRESHOLD
+  )
+    return "failed";
   const summary = scoreIntegrity(signals);
   if (
     summary < 0.78 ||
@@ -61,7 +72,14 @@ function component(
   score: number | null,
   detail: string,
 ): IntegrityComponent {
-  const status = score === null ? "unavailable" : score >= COMPONENT_PASS_THRESHOLD ? "pass" : score >= COMPONENT_FAIL_THRESHOLD ? "review" : "fail";
+  const status =
+    score === null
+      ? "unavailable"
+      : score >= COMPONENT_PASS_THRESHOLD
+        ? "pass"
+        : score >= COMPONENT_FAIL_THRESHOLD
+          ? "review"
+          : "fail";
   return { id, label, score, status, detail };
 }
 
@@ -77,22 +95,51 @@ export function buildIntegrityResult(
     confidence: signals.qualityConfidence,
     summaryScore: scoreIntegrity(signals),
     components: [
-      component("garment_fidelity", "Garment applied", signals.garmentFidelity, "Measured change inside the permitted garment region."),
-      component("outside_region", "Outside garment", signals.outsideRegion, "Pixels beyond the permitted edit stayed stable."),
-      component("face_stability", "Face geometry", signals.faceStability, "Landmark geometry remained within tolerance."),
+      component(
+        "garment_fidelity",
+        "Garment applied",
+        signals.garmentFidelity,
+        "Measured change inside the permitted garment region.",
+      ),
+      component(
+        "outside_region",
+        "Outside garment",
+        signals.outsideRegion,
+        "Compares pixels outside the permitted garment area.",
+      ),
+      component(
+        "face_stability",
+        "Face geometry",
+        signals.faceStability,
+        "Compares facial landmark geometry.",
+      ),
       component(
         "skin_consistency",
         "Skin consistency",
         signals.skinConsistency,
         signals.skinConsistency === null
           ? "Skin AI was not eligible; confidence was reduced."
-          : "Visible skin signals stayed consistent across both images.",
+          : findings.some((finding) => finding.code === "SKIN_APPEARANCE_SHIFT")
+            ? "A local skin appearance change needs review; see the finding below."
+            : "Compares visible skin appearance across both images.",
       ),
-      component("silhouette_stability", "Body silhouette", signals.silhouetteStability, "Contours outside the garment allowance remained stable."),
-      component("preserve_zone", "Custom preserve zone", signals.preserveZone, "The selected glasses region was checked independently."),
+      component(
+        "silhouette_stability",
+        "Body silhouette",
+        signals.silhouetteStability,
+        "Compares contours outside the garment allowance.",
+      ),
+      component(
+        "preserve_zone",
+        "Custom preserve zone",
+        signals.preserveZone,
+        "The selected glasses region was checked independently.",
+      ),
     ],
     findings,
-    repairSupported: signals.preserveZone < COMPONENT_PASS_THRESHOLD && signals.alignmentReliable !== false,
+    repairSupported:
+      signals.preserveZone < COMPONENT_PASS_THRESHOLD &&
+      signals.alignmentReliable !== false,
     repaired: Boolean(signals.repaired),
     createdAt: new Date().toISOString(),
   };

@@ -192,6 +192,8 @@ export function StudioApp({
     demoResult("ic_demo", "pass"),
   );
   const [receipt, setReceipt] = useState<SessionReceipt | null>(null);
+  const [submissionUnknown, setSubmissionUnknown] = useState(false);
+  const [hasGenerationTask, setHasGenerationTask] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const objectUrls = useRef<string[]>([]);
@@ -217,6 +219,8 @@ export function StudioApp({
         });
         if (!response.ok || !active) return;
         const saved = await response.json();
+        setSubmissionUnknown(Boolean(saved.submissionUnknown));
+        setHasGenerationTask(Boolean(saved.hasGenerationTask));
         if (saved.contract) {
           setContract(saved.contract);
           setConsented(Boolean(saved.contract.consentedAt));
@@ -265,7 +269,10 @@ export function StudioApp({
         } else if (saved.hasGenerationTask) {
           setStep(1);
           setError(
-            "An existing generation is available to resume. Continue to check its status without creating another paid task.",
+            saved.submissionUnknown
+              ? (saved.generationError ??
+                  "This submission needs review. Generation is paused to avoid a duplicate charge.")
+              : "An existing generation is available to resume. Continue to check its status without creating another paid task.",
           );
         }
       })
@@ -347,6 +354,7 @@ export function StudioApp({
   }
 
   async function beginGeneration() {
+    if (submissionUnknown) return;
     const run = ++generationRun.current;
     if (!sessionId) {
       setError(
@@ -367,8 +375,18 @@ export function StudioApp({
     try {
       const existing = await responseJson<{
         hasGenerationTask: boolean;
+        submissionUnknown: boolean;
+        generationError: string | null;
         stage: string;
       }>(await fetch(`/api/v1/sessions/${sessionId}`, { cache: "no-store" }));
+      setHasGenerationTask(existing.hasGenerationTask);
+      if (existing.submissionUnknown) {
+        setSubmissionUnknown(true);
+        throw new Error(
+          existing.generationError ??
+            "This submission needs review. Generation is paused to avoid a duplicate charge.",
+        );
+      }
       if (!existing.hasGenerationTask) {
         await responseJson(
           await fetch(`/api/v1/sessions/${sessionId}/identity-contract`, {
@@ -481,6 +499,16 @@ export function StudioApp({
       setStep(3);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (reason) {
+      try {
+        const saved = await responseJson<{
+          submissionUnknown: boolean;
+          hasGenerationTask: boolean;
+        }>(await fetch(`/api/v1/sessions/${sessionId}`, { cache: "no-store" }));
+        setSubmissionUnknown(Boolean(saved.submissionUnknown));
+        setHasGenerationTask(Boolean(saved.hasGenerationTask));
+      } catch {
+        /* The next status check will resolve a lost connection. */
+      }
       setError(
         reason instanceof Error
           ? reason.message
@@ -585,6 +613,9 @@ export function StudioApp({
       );
       sessionStorage.removeItem("asshown-studio-id");
       const next = await createPrivateSession();
+      setSubmissionUnknown(false);
+      setHasGenerationTask(false);
+      setError(null);
       setSessionId(next.sessionId);
       setContract(createContract(next.sessionId));
     } catch {
@@ -1048,14 +1079,20 @@ export function StudioApp({
                   </button>
                   <button
                     className="btn btn-primary"
-                    disabled={!consented || busy || !sessionId}
+                    disabled={
+                      !consented || busy || !sessionId || submissionUnknown
+                    }
                     onClick={beginGeneration}
                   >
                     {busy
                       ? "Starting…"
-                      : experienceMode === "guided"
-                        ? "Run identity drift demo"
-                        : "Approve & generate"}{" "}
+                      : submissionUnknown
+                        ? "Submission needs review"
+                        : hasGenerationTask
+                          ? "Check existing generation"
+                          : experienceMode === "guided"
+                            ? "Run identity drift demo"
+                            : "Approve & generate"}{" "}
                     <ArrowRight size={15} />
                   </button>
                 </div>
@@ -1138,7 +1175,13 @@ export function StudioApp({
               </div>
               <div className="confidence">
                 <strong>
-                  {result.state === "inconclusive" ? "Unchecked" : "Review"}
+                  {result.state === "inconclusive"
+                    ? "Unchecked"
+                    : isPassingResult
+                      ? experienceMode === "guided"
+                        ? "Controlled checks passed"
+                        : "Checks passed"
+                      : "Needs review"}
                 </strong>
                 <span>Scoped appearance checks</span>
               </div>
@@ -1204,7 +1247,9 @@ export function StudioApp({
                     src={generatedUrl}
                     alt={
                       experienceMode === "guided"
-                        ? "Controlled virtual try-on fixture with the shopper's glasses removed"
+                        ? result.repaired
+                          ? "Controlled repair fixture with the shopper’s glasses restored"
+                          : "Controlled virtual try-on fixture with the shopper's glasses removed"
                         : "Virtual try-on generated by YouCam Clothes v3"
                     }
                     fill
