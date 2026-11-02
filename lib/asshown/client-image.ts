@@ -71,3 +71,12 @@ export function dataImageFile(url: string, name: string): File {
     type: prefix[1],
   });
 }
+
+export function isPreviewImage(url: string): boolean {
+  return (
+    /^(data:image\/(png|jpeg);base64,|\/demo\/[^?#]+$)/.test(url) ||
+    /^\/api\/asshown\/assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+      url,
+    )
+  );
+}

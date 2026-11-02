@@ -104,6 +104,18 @@ try {
   const asset = (await upload.json()).asset;
   assert.equal((await call(b, "assets/" + asset.id)).status, 404);
   assert.equal((await call(b, "assets/" + asset.id, "DELETE")).status, 404);
+  assert.equal(
+    (await call(b, "assets/" + asset.id, "PATCH", { consent: true })).status,
+    404,
+  );
+  assert.equal(
+    (await call(a, "assets/" + asset.id, "PATCH", { consent: false })).status,
+    400,
+  );
+  assert.equal(
+    (await call(a, "assets/" + asset.id, "PATCH", { consent: true })).status,
+    200,
+  );
   const original = await call(a, "assets/" + asset.id);
   assert.equal(original.status, 200);
   assert.deepEqual(Buffer.from(await original.arrayBuffer()), bytes);

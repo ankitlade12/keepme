@@ -19,7 +19,7 @@ if (
     }),
   );
 let failures = [];
-for (const path of ["/", "/check?example=1"]) {
+for (const path of ["/", "/check?example=1", "/privacy", "/terms"]) {
   await page.goto(`${base}${path}`);
   await page.waitForTimeout(600);
   const results = await new AxeBuilder({ page })
@@ -31,6 +31,28 @@ for (const path of ["/", "/check?example=1"]) {
       id: v.id,
       impact: v.impact,
       nodes: v.nodes.map((n) => ({ html: n.html, summary: n.failureSummary })),
+    })),
+  );
+}
+await page.goto(`${base}/check?example=1`);
+for (const view of [
+  "Your shortlist",
+  "Saved checks",
+  "Your requirements",
+  "Arrival check",
+  "Product notes",
+  "Privacy & data",
+]) {
+  await page.getByRole("button", { name: view, exact: true }).click();
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  failures.push(
+    ...results.violations.map((v) => ({
+      view,
+      id: v.id,
+      impact: v.impact,
+      nodes: v.nodes.map((n) => n.html),
     })),
   );
 }

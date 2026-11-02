@@ -156,6 +156,7 @@ export function ShoppingWorkspace({
         setDraft((current) => ({
           ...current,
           sku: data.productId,
+          confirmed: false,
           retailer: "Amazon",
           text: `${current.text}\nSource link supplied: ${data.sourceUrl}\nListing details have not been retrieved.`.trim(),
         }));
@@ -214,6 +215,9 @@ export function ShoppingWorkspace({
       );
     }
     if (params.has("example")) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("example");
+      window.history.replaceState(window.history.state, "", url);
       setProducts(examples());
       setSelected("example-rust");
       setStep(2);

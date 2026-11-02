@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 const base = process.env.ASSHOWN_URL ?? "http://localhost:3001";
+const protection =
+  new URL(base).hostname.endsWith(".vercel.app") &&
+  process.env.VERCEL_OIDC_TOKEN
+    ? { "x-vercel-trusted-oidc-idp-token": process.env.VERCEL_OIDC_TOKEN }
+    : {};
 async function session() {
-  const r = await fetch(`${base}/api/asshown/workspace`);
+  const r = await fetch(`${base}/api/asshown/workspace`, {
+    headers: protection,
+  });
   assert.equal(r.status, 200);
   return r.headers.get("set-cookie").split(";")[0];
 }
@@ -10,7 +17,12 @@ const a = await session(),
 async function call(cookie, path, method = "GET", data) {
   return fetch(`${base}/api/asshown/${path}`, {
     method,
-    headers: { cookie, "Content-Type": "application/json", origin: base },
+    headers: {
+      ...protection,
+      cookie,
+      "Content-Type": "application/json",
+      origin: base,
+    },
     body: data ? JSON.stringify(data) : undefined,
   });
 }
@@ -30,6 +42,7 @@ assert.equal((await call(a, "workspace", "PUT", payload)).status, 409);
 const forged = await fetch(`${base}/api/asshown/workspace`, {
   method: "PUT",
   headers: {
+    ...protection,
     cookie: a,
     origin: "https://evil.example",
     "Content-Type": "application/json",
@@ -50,13 +63,31 @@ assert.equal(
     .status,
   400,
 );
-const ticket = await call(a, "support", "POST", {category:"accessibility",message:"The reading order needs a review."});
-assert.equal(ticket.status,201);
+const ticket = await call(a, "support", "POST", {
+  category: "accessibility",
+  message: "The reading order needs a review.",
+});
+assert.equal(ticket.status, 201);
 const ticketId = (await ticket.json()).id;
-assert.equal((await (await call(b,"support")).json()).tickets.length,0);
-assert.equal((await call(b,"support","DELETE",{id:ticketId})).status,404);
-assert.equal((await call(a,"support","PATCH",{id:ticketId,status:"resolved",response:"Resolved by owner"})).status,403);
-assert.equal((await call(a,"support","DELETE",{id:ticketId})).status,200);
+assert.equal((await (await call(b, "support")).json()).tickets.length, 0);
+assert.equal(
+  (await call(b, "support", "DELETE", { id: ticketId })).status,
+  404,
+);
+assert.equal(
+  (
+    await call(a, "support", "PATCH", {
+      id: ticketId,
+      status: "resolved",
+      response: "Resolved by owner",
+    })
+  ).status,
+  403,
+);
+assert.equal(
+  (await call(a, "support", "DELETE", { id: ticketId })).status,
+  200,
+);
 assert.equal((await call(a, "workspace", "DELETE")).status, 200);
 assert.equal((await (await call(a, "workspace")).json()).workspace, null);
 console.log(

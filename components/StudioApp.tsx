@@ -1,7 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { processingImage, dataImageFile } from "@/lib/asshown/client-image";
+import {
+  processingImage,
+  dataImageFile,
+  isPreviewImage,
+} from "@/lib/asshown/client-image";
 import { VisualReviewPanel } from "./VisualReviewPanel";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -236,7 +240,7 @@ export function StudioApp({
               const handoff = JSON.parse(raw);
               if (
                 typeof handoff.image === "string" &&
-                /^(data:image\/(png|jpeg);base64,|\/demo\/)/.test(handoff.image)
+                isPreviewImage(handoff.image)
               ) {
                 setGarmentUrl(handoff.image);
                 setSelectedGarmentId("uploaded");

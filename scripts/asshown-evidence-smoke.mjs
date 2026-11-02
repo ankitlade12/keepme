@@ -1,10 +1,23 @@
 import { chromium } from "playwright";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+const base = process.env.ASSHOWN_URL ?? "http://localhost:3001";
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
-  await page.goto("http://localhost:3001/check?example=1");
+  if (
+    new URL(base).hostname.endsWith(".vercel.app") &&
+    process.env.VERCEL_OIDC_TOKEN
+  )
+    await page.route(`${base}/**`, (r) =>
+      r.continue({
+        headers: {
+          ...r.request().headers(),
+          "x-vercel-trusted-oidc-idp-token": process.env.VERCEL_OIDC_TOKEN,
+        },
+      }),
+    );
+  await page.goto(`${base}/check?example=1`);
   await page
     .getByRole("button", { name: "Arrival check", exact: true })
     .click();

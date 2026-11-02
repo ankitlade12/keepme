@@ -8,7 +8,7 @@ if (!process.env.CLERK_SECRET_KEY?.startsWith("sk_test_"))
   throw new Error("Development Clerk instance required");
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 const browser = await chromium.launch();
-let user;
+let user, page;
 try {
   user = await clerk.users.createUser({
     emailAddress: [`browser-${crypto.randomUUID()}+clerk_test@example.com`],
@@ -18,7 +18,8 @@ try {
     userId: user.id,
     expiresInSeconds: 120,
   });
-  const page = await browser.newPage();
+  page = await browser.newPage();
+  page.setDefaultTimeout(20000);
   if (
     new URL(base).hostname.endsWith(".vercel.app") &&
     process.env.VERCEL_OIDC_TOKEN
@@ -91,6 +92,24 @@ try {
       exact: true,
     })
     .waitFor({ timeout: 90000 });
+  await page
+    .getByRole("button", { name: "Use this evidence", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "4. YouCam preview", exact: true })
+    .click();
+  await page.getByRole("button", { name: /Open preview studio/ }).click();
+  await page.waitForFunction(() =>
+    [...document.images].some((i) =>
+      i.getAttribute("src")?.startsWith("/api/asshown/assets/"),
+    ),
+  );
+  const privatePhoto = page.locator('img[src^="/api/asshown/assets/"]').first();
+  await privatePhoto.evaluate((i) => i.decode());
+  assert(await privatePhoto.evaluate((i) => i.complete && i.naturalWidth > 0));
+  console.log(
+    "Private original handoff reaches studio with an owner-authorized image: passed",
+  );
   const r = await page.request.delete(`${base}/api/asshown/workspace`, {
     headers: {
       Origin: base,
@@ -105,6 +124,18 @@ try {
     "Browser authentication, account save/restore, large private upload and deletion: passed",
   );
 } finally {
+  if (page) {
+    const id = await page
+      .evaluate(() => sessionStorage.getItem("asshown-studio-id"))
+      .catch(() => null);
+    if (id) {
+      const deleted = await page.evaluate(async (id) => {
+        const r = await fetch(`/api/v1/sessions/${id}`, { method: "DELETE" });
+        return r.status;
+      }, id);
+      assert([200, 404].includes(deleted), "Studio test session cleanup");
+    }
+  }
   await browser.close();
   if (user) {
     const session = await clerk.sessions.createSession({ userId: user.id });
