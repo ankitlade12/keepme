@@ -62,7 +62,7 @@ The live provider version remains pinned to Clothes v3. Configuring a credential
 - Review separate appearance and garment observations. Unsupported/occluded or unvalidated checks cannot pass. Repairs preserve a separate original output.
 - Review arrival photos against original product evidence and export a user-reviewed seller-message draft.
 - Prepare public text contributions with explicit content preview/consent, moderation, disputes, appeals, and withdrawal. Optional product-only photos use opaque redaction, screened processing copies, separate consent and explicit moderator image review.
-- Store private originals up to 4 MB with 30-day expiry, renewal, owner-only access and verified deletion. Keep larger originals locally; preview uploads use smaller processing copies.
+- Store private originals up to 10 MB through direct private uploads, with 30-day expiry, renewal, owner-only access and verified deletion. Preview uploads use smaller processing copies.
 - Use optional text translation, reviewed OCR, speech output/input, and image-free support reports. Direct OpenAI features require a project OpenAI API key and provider quota; Vercel AI Gateway is not used. Manual text flows remain available.
 - Moderators can pause new paid processing with an audited reason.
 

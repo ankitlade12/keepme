@@ -1,7 +1,15 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import { BlobNotFoundError, del, get, head, put } from "@vercel/blob";
+import {
+  BlobNotFoundError,
+  del,
+  get,
+  head,
+  put,
+  issueSignedToken,
+  presignUrl,
+} from "@vercel/blob";
 import { serverConfig } from "./server-config";
 
 export interface ArtifactRef {
@@ -43,13 +51,13 @@ export async function putArtifact(
   return { key, url, contentType, size: bytes.byteLength, sha256 };
 }
 
-export async function readArtifact(
+export async function streamArtifact(
   reference: ArtifactRef,
-): Promise<Uint8Array> {
+): Promise<ReadableStream<Uint8Array>> {
   if (!objectStorageEnabled()) {
     const bytes = localArtifacts.get(reference.key);
     if (!bytes) throw new Error("Artifact is unavailable.");
-    return new Uint8Array(bytes);
+    return new Response(Buffer.from(bytes)).body!;
   }
   const response = await get(reference.url ?? reference.key, {
     access: "private",
@@ -57,7 +65,14 @@ export async function readArtifact(
   });
   if (!response || response.statusCode !== 200)
     throw new Error("Artifact is unavailable.");
-  return new Uint8Array(await new Response(response.stream).arrayBuffer());
+  return response.stream;
+}
+export async function readArtifact(
+  reference: ArtifactRef,
+): Promise<Uint8Array> {
+  return new Uint8Array(
+    await new Response(await streamArtifact(reference)).arrayBuffer(),
+  );
 }
 
 export async function deleteArtifacts(references: Array<ArtifactRef | null>) {
@@ -92,4 +107,20 @@ export async function deleteArtifacts(references: Array<ArtifactRef | null>) {
 
 export function usingDurableObjectStorage() {
   return objectStorageEnabled();
+}
+
+export async function scannerReadUrl(reference: ArtifactRef) {
+  const signed = await issueSignedToken({
+    pathname: reference.key,
+    operations: ["get"],
+    validUntil: Date.now() + 5 * 60000,
+  });
+  return (
+    await presignUrl(signed, {
+      operation: "get",
+      pathname: reference.key,
+      access: "private",
+      useCache: false,
+    })
+  ).presignedUrl;
 }

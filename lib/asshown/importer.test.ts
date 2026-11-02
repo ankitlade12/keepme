@@ -1,6 +1,12 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { permittedUrl, publicIPv4, parseProduct } from "./importer";
+import {
+  amazonProduct,
+  permittedUrl,
+  publicIPv4,
+  parseProduct,
+  robotsAllows,
+} from "./importer";
 describe("retailer import boundary", () => {
   it("blocks local and unapproved targets", () => {
     for (const u of [
@@ -32,4 +38,68 @@ describe("retailer import boundary", () => {
     ).toBe("Jacket");
     expect(() => parseProduct("<html>Sign in</html>")).toThrow();
   });
+});
+
+it("respects matching robots paths rather than blocking an entire retailer", () => {
+  const rules =
+    "User-agent: *\nDisallow: /cart\nDisallow: /products/private*\nAllow: /products/private-public$";
+  expect(
+    robotsAllows(rules, new URL("https://shop.example/products/shirt")),
+  ).toBe(true);
+  expect(robotsAllows(rules, new URL("https://shop.example/cart"))).toBe(false);
+  expect(
+    robotsAllows(rules, new URL("https://shop.example/products/private-item")),
+  ).toBe(false);
+  expect(
+    robotsAllows(
+      rules,
+      new URL("https://shop.example/products/private-public"),
+    ),
+  ).toBe(true);
+});
+it("uses the bot-specific group when present", () => {
+  const rules =
+    "User-agent: *\nAllow: /\nUser-agent: AsShownProductImport\nDisallow: /";
+  expect(
+    robotsAllows(rules, new URL("https://shop.example/products/shirt")),
+  ).toBe(false);
+});
+
+it("treats regex punctuation in robots paths literally", () => {
+  const r = "User-agent: *\nDisallow: /products/shirt?private=true$";
+  expect(
+    robotsAllows(
+      r,
+      new URL("https://shop.example/products/shirt?private=true"),
+    ),
+  ).toBe(false);
+  expect(robotsAllows(r, new URL("https://shop.example/products/shirt"))).toBe(
+    true,
+  );
+});
+
+it("recognizes Amazon product links and removes tracking", () => {
+  for (const path of [
+    "/a-shirt/dp/B012345678/ref=abc?tag=affiliate",
+    "/gp/product/b012345678?th=1",
+  ]) {
+    expect(amazonProduct(`https://www.amazon.com${path}`)).toEqual({
+      productId: "B012345678",
+      sourceUrl: "https://www.amazon.com/dp/B012345678",
+    });
+  }
+  expect(
+    amazonProduct("https://amazon.com.evil.example/dp/B012345678"),
+  ).toBeNull();
+});
+it("rejects unsafe and non-product Amazon URLs", () => {
+  for (const url of [
+    "http://amazon.com/dp/B012345678",
+    "https://user:pass@amazon.com/dp/B012345678",
+    "https://amazon.com:444/dp/B012345678",
+    "https://amazon.com/s?k=shirt",
+    "https://amazon.com/dp/B0123456789",
+  ]) {
+    expect(() => amazonProduct(url)).toThrow();
+  }
 });

@@ -6,7 +6,7 @@ import {
   revokeAsset,
   type PrivateAsset,
 } from "@/lib/asshown/assets";
-import { readArtifact } from "@/lib/object-store";
+import { streamArtifact } from "@/lib/object-store";
 import { originAllowed } from "@/lib/security";
 export async function GET(
   request: NextRequest,
@@ -18,8 +18,8 @@ export async function GET(
   if (!row) return new NextResponse(null, { status: 404 });
   const asset = (row.data as PrivateAsset).original;
   try {
-    const bytes = await readArtifact(asset);
-    return new NextResponse(Buffer.from(bytes), {
+    const stream = await streamArtifact(asset);
+    return new NextResponse(stream, {
       headers: {
         "Content-Type": asset.contentType,
         "Cache-Control": "private, no-store",

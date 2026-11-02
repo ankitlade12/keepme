@@ -1,4 +1,5 @@
-import {purgeExpiredRecords} from "./asshown/records";
+import { cleanupStagedUploads } from "./asshown/staged-upload";
+import { purgeExpiredRecords } from "./asshown/records";
 import { cleanupCommunityMedia } from "./asshown/community-media";
 import "server-only";
 import { cleanupPrivateAssets } from "./asshown/assets";
@@ -69,12 +70,13 @@ export async function runMaintenance() {
   }
   const privateAssets = await cleanupPrivateAssets();
   return {
-    expiredMetadata:await purgeExpiredRecords(),
+    expiredMetadata: await purgeExpiredRecords(),
     claimed: jobs.length,
     swept: expired.length,
     completed,
     failed,
     privateAssets,
+    stagedUploads: await cleanupStagedUploads(),
     communityMedia: await cleanupCommunityMedia(),
   };
 }

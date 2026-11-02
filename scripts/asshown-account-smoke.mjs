@@ -1,3 +1,6 @@
+import { upload as directUpload } from "@vercel/blob/client";
+import sharp from "sharp";
+import { randomBytes } from "node:crypto";
 import { createClerkClient } from "@clerk/backend";
 import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
@@ -49,7 +52,14 @@ try {
   const initial = await call(a, "workspace");
   assert.equal(initial.status, 200);
   assert.equal((await initial.json()).signedIn, true);
-  const bytes = await readFile("public/demo/rust-jacket.png");
+  const bytes =
+    process.env.ASSHOWN_DIRECT_UPLOAD === "true"
+      ? await sharp(randomBytes(1400 * 1200 * 3), {
+          raw: { width: 1400, height: 1200, channels: 3 },
+        })
+          .png()
+          .toBuffer()
+      : await readFile("public/demo/rust-jacket.png");
   const form = new FormData();
   for (const [k, v] of Object.entries({
     productId: "account-test-item",
@@ -60,7 +70,36 @@ try {
   }))
     form.set(k, v);
   form.set("image", new File([bytes], "fixture.png", { type: "image/png" }));
-  const upload = await call(a, "assets", "POST", form);
+  let upload;
+  if (process.env.ASSHOWN_DIRECT_UPLOAD === "true") {
+    assert(bytes.length > 4.5 * 1024 * 1024);
+    const uploadId = crypto.randomUUID();
+    const h = {
+      Authorization: `Bearer ${a}`,
+      Origin: base,
+      ...(new URL(base).hostname.endsWith(".vercel.app") &&
+      process.env.VERCEL_OIDC_TOKEN
+        ? { "x-vercel-trusted-oidc-idp-token": process.env.VERCEL_OIDC_TOKEN }
+        : {}),
+    };
+    await directUpload(
+      `quarantine/${uploadId}`,
+      new Blob([bytes], { type: "image/png" }),
+      {
+        access: "private",
+        handleUploadUrl: base + "/api/asshown/assets/upload",
+        headers: h,
+        clientPayload: JSON.stringify(
+          Object.fromEntries(
+            [...form.entries()].filter(([key]) => key !== "image"),
+          ),
+        ),
+      },
+    );
+    assert((await call(b, "assets", "POST", { uploadId })).status >= 400);
+    upload = await call(a, "assets", "POST", { uploadId });
+    assert((await call(a, "assets", "POST", { uploadId })).status >= 400);
+  } else upload = await call(a, "assets", "POST", form);
   assert.equal(upload.status, 201, await upload.clone().text());
   const asset = (await upload.json()).asset;
   assert.equal((await call(b, "assets/" + asset.id)).status, 404);

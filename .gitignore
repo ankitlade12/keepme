@@ -33,3 +33,7 @@ skills-lock.json
 .asshown-data/
 artifacts/
 .vercel
+
+# Python service bytecode
+__pycache__/
+*.pyc

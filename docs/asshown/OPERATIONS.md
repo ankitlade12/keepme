@@ -15,7 +15,7 @@ Use the moderator controls under Support to pause new paid requests with a speci
 
 ## Evidence and deletion
 
-Private originals are limited to 4 MB to fit the hosting request boundary, remain owner-authorized, and expire after 30 days unless explicitly renewed. The browser can handle larger local originals for exports; paired provider/vision processing uses smaller JPEG copies. Do not describe those processing copies as original evidence.
+Private originals are limited to 10 MB, upload directly into private quarantine, and are validated and scanned before becoming owner-authorized evidence. Upload tokens expire after five minutes; maintenance verifies quarantine deletion after the 15-minute intent window. Originals expire after 30 days unless explicitly renewed. The browser can handle larger local originals for exports; paired provider/vision processing uses smaller JPEG copies. Do not describe those processing copies as original evidence.
 
 Deletion revokes application access before physical storage cleanup. Verify an image route returns 404, then inspect the stored purge/deletion status. The authenticated maintenance endpoint retries pending cleanup and expires consent/workspace records. Preview cron scheduling is not a guarantee of execution: before public launch, verify actual maintenance runs and alert on failed cleanup. Provider-side retention and backup restoration behavior require separate verification.
 
@@ -32,3 +32,7 @@ Use development Clerk credentials only for `scripts/asshown-account-smoke.mjs` a
 - Verify manual keyboard/screen-reader flows, cleanup monitoring and backup/deletion replay.
 - Set up a public judge-accessible deployment and production authentication configuration before distributing a submission URL. Current previews require Vercel access.
 - Review the local captioned video draft, repository access, actual costs and Devpost fields before publication. No submission or external message is automated by these scripts.
+
+Amazon.com product links are recognized by ASIN. Automatic fetching respects robots rules and does not follow redirects or bypass retailer blocks. When retrieval fails, only the source link and product ID are retained; the user must paste listing details and confirm the variant. Other retailers require ASSHOWN_RETAILER_HOSTS.
+
+For originals over 4 MB, the web service issues a five-minute, single-object, GET-only private Blob URL to the authenticated scanner. The scanner rejects redirects and non-private-Blob hosts, bounds its download to 10 MB, verifies SHA-256, and returns the scanned hash with its malware decision. The web service rejects a missing or mismatched hash. Never log these short-lived URLs. This avoids the internal service request-body ceiling without skipping original-byte scanning.

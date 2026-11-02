@@ -1,3 +1,4 @@
+import { claimUpload, stagedFile } from "@/lib/asshown/staged-upload";
 import { NextRequest, NextResponse } from "next/server";
 import { actor } from "@/lib/asshown/access";
 import {
@@ -10,6 +11,7 @@ import { changeRecord, listRecords } from "@/lib/asshown/records";
 import { sanitizeImage, UploadValidationError } from "@/lib/upload-security";
 import {
   putArtifact,
+  scannerReadUrl,
   deleteArtifacts,
   type ArtifactRef,
 } from "@/lib/object-store";
@@ -59,16 +61,34 @@ export async function POST(request: NextRequest) {
     );
   const stored: ArtifactRef[] = [];
   let recorded = false;
+  let staged: ArtifactRef | undefined;
   try {
-    const form = await request.formData();
-    const parsed = assetInput.safeParse(
-      Object.fromEntries(
+    let file: FormDataEntryValue | null;
+    let input: unknown;
+    if (request.headers.get("content-type")?.includes("application/json")) {
+      const body = await request.json();
+      if (typeof body.uploadId !== "string")
+        throw new UploadValidationError("Select an upload first.");
+      const intent = await claimUpload(a.owner, body.uploadId);
+      const loaded = await stagedFile(intent);
+      file = loaded.file;
+      input = loaded.input;
+      staged = loaded.ref;
+    } else {
+      const form = await request.formData();
+      file = form.get("image");
+      input = Object.fromEntries(
         ["productId", "variant", "kind", "note", "consent"].map((k) => [
           k,
           form.get(k) ?? "",
         ]),
-      ),
-    );
+      );
+      if (file instanceof File && file.size > 4 * 1024 * 1024)
+        throw new UploadValidationError(
+          "Use the direct-upload flow for originals larger than 4 MB.",
+        );
+    }
+    const parsed = assetInput.safeParse(input);
     if (!parsed.success)
       return NextResponse.json(
         { error: "Confirm storage consent and the exact item before saving." },
@@ -86,13 +106,11 @@ export async function POST(request: NextRequest) {
         },
         { status: 409 },
       );
-    const file = form.get("image");
-    if (file instanceof File && file.size > 4 * 1024 * 1024)
-      return NextResponse.json(
-        { error: "Private originals must be 4 MB or smaller." },
-        { status: 413 },
-      );
-    const normalized = await sanitizeImage(file, "Evidence image");
+    const scanUrl =
+      staged && file instanceof File && file.size > 4 * 1024 * 1024
+        ? await scannerReadUrl(staged)
+        : undefined;
+    const normalized = await sanitizeImage(file, "Evidence image", scanUrl);
     const bytes = new Uint8Array(await (file as File).arrayBuffer());
     const id = crypto.randomUUID();
     const type = bytes[0] === 137 ? "image/png" : "image/jpeg";
@@ -132,6 +150,7 @@ export async function POST(request: NextRequest) {
       { status: e instanceof UploadValidationError ? 400 : 503 },
     );
   } finally {
+    if (staged) await deleteArtifacts([staged]).catch(() => {});
     if (!recorded && stored.length)
       await deleteArtifacts(stored).catch(() => {});
   }

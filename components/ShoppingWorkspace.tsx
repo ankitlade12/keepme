@@ -152,16 +152,27 @@ export function ShoppingWorkspace({
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error);
-      setDraft({
-        ...blank,
-        title: data.title,
-        brand: data.brand,
-        retailer: new URL(importUrl).hostname,
-        text: `${data.text}\nSource: ${data.sourceUrl}\nRetrieved: ${data.sourceDate}`,
-      });
-      setMessage(
-        "Imported public product text. Confirm the exact color and size before evaluating.",
-      );
+      if (data.mode === "manual") {
+        setDraft((current) => ({
+          ...current,
+          sku: data.productId,
+          retailer: "Amazon",
+          text: `${current.text}\nSource link supplied: ${data.sourceUrl}\nListing details have not been retrieved.`.trim(),
+        }));
+        setMessage(data.message);
+      } else {
+        setDraft({
+          ...blank,
+          title: data.title,
+          sku: data.productId || "",
+          brand: data.brand,
+          retailer: new URL(data.sourceUrl).hostname,
+          text: `${data.text}\nSource: ${data.sourceUrl}\nRetrieved: ${data.sourceDate}`,
+        });
+        setMessage(
+          "Imported public product text. Confirm the exact color and size before evaluating.",
+        );
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -585,7 +596,7 @@ export function ShoppingWorkspace({
                     <h2>What caught your eye?</h2>
                     <details style={{ marginBottom: 20 }}>
                       <summary className="as-muted">
-                        Import a supported retailer URL
+                        Add an Amazon or supported retailer link
                       </summary>
                       <label className="as-field">
                         Public product URL
@@ -604,8 +615,10 @@ export function ShoppingWorkspace({
                         Import listing
                       </button>
                       <p className="as-muted">
-                        Only explicitly configured public retailers are
-                        supported. Blocked pages fall back to pasted text.
+                        Amazon.com product links are supported. If the retailer
+                        blocks access, we save the link and product ID so you
+                        can paste the listing details. Color and size need your
+                        confirmation.
                       </p>
                     </details>
                     <p className="as-muted">

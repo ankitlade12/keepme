@@ -138,12 +138,123 @@ export function parseProduct(html: string) {
       .join("\n"),
   };
 }
+function matchesRobotsPath(pattern: string, path: string) {
+  let p = 0,
+    t = 0,
+    star = -1,
+    retry = 0;
+  while (t < path.length) {
+    if (pattern[p] === path[t]) {
+      p++;
+      t++;
+    } else if (pattern[p] === "*") {
+      star = p++;
+      retry = t;
+    } else if (star !== -1) {
+      p = star + 1;
+      t = ++retry;
+    } else return false;
+  }
+  while (pattern[p] === "*") p++;
+  return p === pattern.length;
+}
+export function robotsAllows(text: string, url: URL) {
+  if (text.length > 100000 || url.href.length > 2048) return false;
+  const groups: Array<{
+    agents: string[];
+    rules: Array<{ allow: boolean; path: string }>;
+  }> = [];
+  let group: (typeof groups)[number] | undefined;
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.split("#", 1)[0].trim();
+    const match = /^(user-agent|allow|disallow):\s*(.*)$/i.exec(line);
+    if (!match) continue;
+    const [, directive, value] = match;
+    if (directive.toLowerCase() === "user-agent") {
+      if (!group || group.rules.length) {
+        group = { agents: [], rules: [] };
+        groups.push(group);
+      }
+      group.agents.push(value.toLowerCase());
+    } else if (group && value)
+      group.rules.push({
+        allow: directive.toLowerCase() === "allow",
+        path: value,
+      });
+  }
+  const agent = "asshownproductimport";
+  const score = (g: (typeof groups)[number]) =>
+    Math.max(
+      -1,
+      ...g.agents.map((a) =>
+        a === "*" ? 0 : agent.includes(a) ? a.length : -1,
+      ),
+    );
+  const specificity = Math.max(-1, ...groups.map(score));
+  const path = url.pathname + url.search;
+  let best = -1,
+    allowed = true;
+  for (const g of groups.filter(
+    (g) => score(g) === specificity && specificity >= 0,
+  ))
+    for (const rule of g.rules) {
+      const anchored = rule.path.endsWith("$");
+      const pattern = anchored ? rule.path.slice(0, -1) : rule.path + "*";
+      if (matchesRobotsPath(pattern, path)) {
+        const length = rule.path.replace(/[*$]/g, "").length;
+        if (length > best || (length === best && rule.allow)) {
+          best = length;
+          allowed = rule.allow;
+        }
+      }
+    }
+  return allowed;
+}
+export function amazonProduct(raw: string) {
+  const parsed = new URL(raw);
+  if (!["amazon.com", "www.amazon.com"].includes(parsed.hostname.toLowerCase()))
+    return null;
+  permittedUrl(raw, ["amazon.com", "www.amazon.com"]);
+  const match = /\/(?:dp|gp\/product)\/([A-Z0-9]{10})(?:\/|$)/i.exec(
+    parsed.pathname,
+  );
+  if (!match)
+    throw new Error(
+      "Use an Amazon product link containing /dp/ or /gp/product/, then confirm its exact color and size.",
+    );
+  const productId = match[1].toUpperCase();
+  return { productId, sourceUrl: `https://www.amazon.com/dp/${productId}` };
+}
 export async function importRetailer(raw: string, hosts: string[]) {
+  const amazon = amazonProduct(raw);
+  if (amazon) {
+    try {
+      return {
+        ...(await fetchRetailer(amazon.sourceUrl, ["www.amazon.com"])),
+        productId: amazon.productId,
+        mode: "imported" as const,
+      };
+    } catch {
+      return {
+        ...amazon,
+        mode: "manual" as const,
+        title: "",
+        brand: "",
+        text: "",
+        variantConfirmed: false,
+        message:
+          "Amazon link saved. Listing details could not be retrieved. Paste the product title and listing text below, or add screenshots to your private evidence library. Confirm the exact color and size.",
+      };
+    }
+  }
+  return { ...(await fetchRetailer(raw, hosts)), mode: "imported" as const };
+}
+async function fetchRetailer(raw: string, hosts: string[]) {
   const url = permittedUrl(raw, hosts);
   const robots = await fetchPublic(new URL("/robots.txt", url));
   if (
     robots.status !== 404 &&
-    robots.text.split("\n").some((l) => /^\s*Disallow:\s*\S/i.test(l))
+    (!robots.type.includes("text/plain") || !robotsAllows(robots.text, url))
   )
     throw new Error(
       "This retailer publishes crawl restrictions. Paste the listing instead.",

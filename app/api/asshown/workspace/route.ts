@@ -1,3 +1,4 @@
+import type { UploadIntent } from "@/lib/asshown/staged-upload";
 import {
   ownedAsset,
   revokeAsset,
@@ -148,6 +149,15 @@ export async function DELETE(request: NextRequest) {
   await changeRecord(`workspace:${a.owner}`, a.owner, "workspace", () => null);
   for (const row of await listRecords("consent", a.owner))
     await changeRecord(row.id, a.owner, "consent", () => null);
+  for (const row of await listRecords("upload-intent", a.owner))
+    await changeRecord(row.id, a.owner, "upload-intent", (current) =>
+      current
+        ? {
+            ...(current.data as UploadIntent),
+            revokedAt: new Date().toISOString(),
+          }
+        : null,
+    );
   let pending = 0;
   for (const row of await listRecords("asset", a.owner)) {
     try {

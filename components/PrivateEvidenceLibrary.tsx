@@ -1,4 +1,5 @@
 "use client";
+import { upload } from "@vercel/blob/client";
 import { EvidenceTranscription } from "./EvidenceTranscription";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -70,19 +71,22 @@ export function PrivateEvidenceLibrary({
     if (!file || !consent) return;
     setBusy(true);
     try {
-      const form = new FormData();
-      for (const [key, value] of Object.entries({
-        productId,
-        variant,
-        kind,
-        note,
-        consent: "true",
-      }))
-        form.set(key, value);
-      form.set("image", file);
+      const uploadId = crypto.randomUUID();
+      await upload(`quarantine/${uploadId}`, file, {
+        access: "private",
+        handleUploadUrl: "/api/asshown/assets/upload",
+        clientPayload: JSON.stringify({
+          productId,
+          variant,
+          kind,
+          note,
+          consent: "true",
+        }),
+      });
       const r = await fetch("/api/asshown/assets", {
         method: "POST",
-        body: form,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error);
@@ -124,16 +128,16 @@ export function PrivateEvidenceLibrary({
             </select>
           </label>
           <label className="as-field">
-            Original JPEG or PNG (4 MB maximum)
+            Original JPEG or PNG (10 MB maximum)
             <input
               type="file"
               accept="image/jpeg,image/png"
               onChange={(e) => {
                 const next = e.target.files?.[0];
-                if (next && next.size > 4 * 1024 * 1024) {
+                if (next && next.size > 10 * 1024 * 1024) {
                   setFile(null);
                   setMessage(
-                    "Private originals must be 4 MB or smaller. Keep larger originals on your device.",
+                    "Private originals must be 10 MB or smaller. Keep larger originals on your device.",
                   );
                   return;
                 }

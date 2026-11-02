@@ -13,3 +13,6 @@ public/demo/controlled-glasses-violation-v4.png
 artifacts/
 
 .asshown-data/
+
+__pycache__/
+*.pyc
